@@ -76,7 +76,7 @@ function startSetup(adopting) {
   showOnly('setupView');
   $('#setupHint').textContent = adopting
     ? 'Encontramos seus dados. Complete seu perfil para protegê-los com senha.'
-    : 'Cadastro único: seu nome aparece no topo e a senha protege seus dados. Depois, a entrada pede só a senha.';
+    : $('#setupHint').textContent || 'Crie a SUA senha — é ela que você vai digitar toda vez para entrar.';
   $('#tokenBox').hidden = true;
   $('#btnSetup').hidden = false;
   $('#setupErr').textContent = '';
@@ -92,6 +92,15 @@ function bindAuth() {
   $('#btnTokenGo').onclick = () => { applyTheme(); afterUnlock(); };
   $('#btnUnlock').onclick = tryUnlock;
   $('#unlockPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
+  // Olho: ver a senha digitada em qualquer campo de senha
+  document.querySelectorAll('[data-eye]').forEach((b) => b.onclick = () => {
+    const input = document.getElementById(b.dataset.eye);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    b.textContent = show ? '🙈' : '👁️';
+    b.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
+  });
   for (const id of ['#setupName', '#setupPass', '#setupPass2']) {
     $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') doSetup(); });
   }
@@ -166,6 +175,11 @@ function lock() {
   $('#unlockErr').textContent = '';
   applyProfileToLock();
   showOnly('lockView');
+}
+
+// Código de cadastro: compara ignorando traço, espaços e maiúsculas.
+function normalizeToken(t) {
+  return String(t || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
 async function persist() {
@@ -300,6 +314,11 @@ function bindOnce() {
   };
   $('#btnWipe').onclick = async () => {
     if (!confirm('Apagar TODOS os dados locais (perfil + compromissos)?')) return;
+    const typed = prompt('Para confirmar, digite seu CÓDIGO de cadastro (está em Ajustes → Perfil):');
+    if (normalizeToken(typed) !== normalizeToken(profile?.token || '')) {
+      alert('Código incorreto. Nada foi apagado.');
+      return;
+    }
     wipeAll();
     state = defaultState(); profile = null; sessionPass = null; migrationPass = null;
     startSetup(false);

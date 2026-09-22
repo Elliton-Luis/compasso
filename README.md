@@ -44,9 +44,12 @@ Com servidor local ou HTTPS: o navegador oferece "Instalar". Depois de instalado
 
 ## Perfil
 
-Cadastro único de nome + senha. Gera um token de cadastro (anote — identifica seu perfil no aparelho). Depois, a entrada pede só a senha. O nome aparece no topo do app.
+Cadastro único de nome + **senha** (a que você digita para entrar; o 👁️ mostra o que foi digitado). O app então gera um **código** diferente (ex.: `AB12-CD34`):
 
-Ajustes → Perfil: trocar nome, ver/copiar o token.
+- **Senha** → abre o app. Só você sabe.
+- **Código** → não abre nada; prova que o perfil é seu e é pedido para confirmar ações importantes (apagar tudo). Anote e guarde — ele está em Ajustes → Perfil, com botão copiar.
+
+Depois do cadastro, a entrada pede só a senha (com 👁️ para conferir).
 
 ## Sessão (lembrar de mim)
 

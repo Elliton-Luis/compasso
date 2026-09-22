@@ -31,18 +31,18 @@
   </div>
   <div id="setupView" class="card lock" hidden>
     <h2>① Criar meu perfil (só uma vez)</h2>
-    <p class="muted" id="setupHint">Cadastro único: seu nome aparece no topo e a senha protege seus dados. Depois, a entrada pede só a senha.</p>
+    <p class="muted" id="setupHint">Crie abaixo a <strong>SUA senha</strong> — é ela que você vai digitar toda vez para entrar. Depois o app gera um <strong>CÓDIGO</strong> diferente (não é senha).</p>
     <input id="setupName" maxlength="30" placeholder="Seu nome" autocomplete="given-name" style="max-width:280px">
     <div id="setupPassFields" style="display:grid;gap:10px;place-items:center;width:100%">
-      <input id="setupPass" type="password" placeholder="Senha (mín. 4 caracteres)" autocomplete="new-password" style="max-width:280px">
-      <input id="setupPass2" type="password" placeholder="Repetir senha" autocomplete="new-password" style="max-width:280px">
+      <div class="pwrow" style="max-width:280px"><input id="setupPass" type="password" placeholder="Crie sua senha de entrada (mín. 4)" autocomplete="new-password"><button type="button" class="eye" data-eye="setupPass" aria-label="Mostrar senha">👁️</button></div>
+      <div class="pwrow" style="max-width:280px"><input id="setupPass2" type="password" placeholder="Repita a mesma senha" autocomplete="new-password"><button type="button" class="eye" data-eye="setupPass2" aria-label="Mostrar senha">👁️</button></div>
     </div>
     <button class="btn" id="btnSetup" style="max-width:280px">Criar perfil</button>
     <p class="muted" id="setupErr"></p>
     <div class="token" id="tokenBox" hidden style="max-width:280px">
-      <p class="muted" style="margin:0 0 4px">Seu token de cadastro (anote):</p>
+      <p class="muted" style="margin:0 0 4px">Este é o seu <strong>CÓDIGO</strong> (não é a senha):</p>
       <strong id="tokenValue"></strong>
-      <p class="muted" id="tokenHint">Guarde-o. Ele identifica seu perfil neste aparelho.</p>
+      <p class="muted" id="tokenHint">A <strong>senha</strong> abre o app. O <strong>código</strong> prova que o perfil é seu e será pedido para confirmar ações importantes, como apagar tudo. Anote e guarde.</p>
       <button class="btn" id="btnTokenGo">Começar →</button>
     </div>
   </div>
@@ -50,8 +50,8 @@
   <div id="lockView" class="card lock" hidden>
     <p class="muted" style="margin:0">② Entrada (só a senha)</p>
     <h2 id="lockHello">Protegido por senha</h2>
-    <p class="muted">Digite sua senha para entrar.</p>
-    <input id="unlockPass" type="password" placeholder="Senha" autocomplete="current-password" style="max-width:280px">
+    <p class="muted">Digite a <strong>senha que você criou</strong> no cadastro (não o código).</p>
+    <div class="pwrow" style="max-width:280px"><input id="unlockPass" type="password" placeholder="Sua senha" autocomplete="current-password"><button type="button" class="eye" data-eye="unlockPass" aria-label="Mostrar senha">👁️</button></div>
     <label class="muted row" style="gap:6px"><input type="checkbox" id="rememberMe" style="width:auto"> <span id="rememberLabel">Lembrar de mim</span></label>
     <button class="btn" id="btnUnlock" style="max-width:280px">Entrar</button>
     <p class="muted" id="unlockErr"></p>
@@ -140,7 +140,7 @@
       <div class="compact">
         <label class="f">Nome (aparece no topo)<input id="setName" maxlength="30" autocomplete="off"></label>
         <div class="row"><button class="btn small" id="btnSaveName">Salvar nome</button></div>
-        <p class="muted">Token de cadastro: <strong id="setToken" style="letter-spacing:.1em"></strong> <button class="btn small ghost" id="btnCopyToken">Copiar</button></p>
+        <p class="muted">Código de cadastro (não é a senha — será pedido para apagar tudo): <strong id="setToken" style="letter-spacing:.1em"></strong> <button class="btn small ghost" id="btnCopyToken">Copiar</button></p>
       </div>
     </div>
     <div class="card">
@@ -156,10 +156,10 @@
     <div class="card">
       <h2>Senha e sessão</h2>
       <div class="compact">
-        <p class="muted" style="margin:0">Dados criptografados (AES-GCM). A senha não é armazenada.</p>
+        <p class="muted" style="margin:0">Troque a senha de entrada (a que abre o app). Dados criptografados (AES-GCM); a senha não é armazenada.</p>
         <div class="f2">
-          <label class="f">Nova senha<input id="secPass" type="password" placeholder="Nova senha" autocomplete="new-password"></label>
-          <label class="f">Repetir<input id="secPass2" type="password" placeholder="Repetir" autocomplete="new-password"></label>
+          <label class="f">Nova senha<div class="pwrow"><input id="secPass" type="password" placeholder="Nova senha" autocomplete="new-password"><button type="button" class="eye" data-eye="secPass" aria-label="Mostrar senha">👁️</button></div></label>
+          <label class="f">Repetir<div class="pwrow"><input id="secPass2" type="password" placeholder="Repetir" autocomplete="new-password"><button type="button" class="eye" data-eye="secPass2" aria-label="Mostrar senha">👁️</button></div></label>
         </div>
         <div class="row"><button class="btn small" id="btnChangePass">Trocar senha</button></div>
         <label class="f">Lembrar de mim por<select id="rememberMinutes"></select></label>
