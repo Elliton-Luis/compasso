@@ -335,7 +335,7 @@ function render() {
 
   const max = Math.max(1, ...proj.slice(0, 12).map((p) => p.comprometido));
   $('#bars').innerHTML = proj.slice(0, 12).map((p) =>
-    `<div class="row between" style="font-size:13px"><span style="width:64px">${p.label}</span>` +
+    `<div class="row between" style="font-size:15px"><span style="width:70px">${p.label}</span>` +
     `<div class="bar" style="flex:1"><i style="width:${Math.round((p.comprometido / max) * 100)}%"></i></div>` +
     `<strong style="width:86px;text-align:right">${formatBRL(p.comprometido)}</strong></div>`).join('');
 
