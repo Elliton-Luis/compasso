@@ -23,6 +23,7 @@ function parseBR(v) {
 // ---------- boot ----------
 function showOnly(id) {
   for (const v of ['#setupView', '#lockView', '#appViews']) $(v).hidden = v !== '#' + id;
+  document.body.classList.toggle('locked', id !== 'appViews');
 }
 
 function applyProfileToLock() {
@@ -330,6 +331,58 @@ function showSim() {
     `Dinheiro comprometido até ${sum.ultimoComCompromisso || '—'}. Total futuro: ${formatBRL(sum.totalFuturo)}.</span>`;
 }
 
+// ---------- gráficos (SVG puro, sem dependências) ----------
+function shortBRL(cents) {
+  return (cents / 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+}
+
+const PALETTE = ['#2563eb', '#ec4899', '#16a34a', '#ea580c', '#7c3aed', '#0891b2', '#dc2626', '#a16207', '#059669', '#c026d3', '#4f46e5', '#4b5563'];
+
+// Barras verticais: comprometido por mês (12 meses). Pico em destaque.
+function monthsChart(proj) {
+  const data = proj.slice(0, 12);
+  if (!data.some((p) => p.comprometido > 0)) return '<p class="muted">Sem compromissos futuros. 🎉</p>';
+  const max = Math.max(...data.map((p) => p.comprometido));
+  const W = 360, H = 196, padB = 26, padT = 24;
+  const maxBarH = H - padB - padT;
+  const n = data.length, slot = W / n, bw = Math.min(24, slot - 8);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Comprometido por mês">`;
+  data.forEach((p, i) => {
+    const h = Math.round((p.comprometido / max) * maxBarH);
+    const x = Math.round(i * slot + (slot - bw) / 2);
+    const y = H - padB - h;
+    const isMax = p.comprometido === max;
+    s += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h, 2)}" rx="4" fill="var(--accent)" opacity="${isMax ? 1 : 0.5}"><title>${p.labelLong}: ${formatBRL(p.comprometido)}</title></rect>`;
+    if (p.comprometido > 0) s += `<text x="${(x + bw / 2).toFixed(1)}" y="${y - 5}" text-anchor="middle" font-size="10" fill="currentColor">${shortBRL(p.comprometido)}</text>`;
+    s += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 9}" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">${p.label}</text>`;
+  });
+  return s + '</svg>';
+}
+
+// Rosca: para onde vai o dinheiro por categoria (12 meses).
+function catsDonut(proj) {
+  const totals = new Map();
+  for (const p of proj.slice(0, 12)) {
+    for (const it of p.itens) totals.set(it.categoria, (totals.get(it.categoria) || 0) + it.valorCentavos);
+  }
+  const entries = [...totals.entries()].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+  if (!total) return '<p class="muted">Sem compromissos nos próximos 12 meses.</p>';
+  const R = 52, C = 2 * Math.PI * R;
+  let off = 0, segs = '';
+  entries.forEach(([cat, v], i) => {
+    const len = (v / total) * C;
+    segs += `<circle cx="66" cy="66" r="${R}" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="24" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 66 66)"><title>${cat}: ${formatBRL(v)}</title></circle>`;
+    off += len;
+  });
+  const leg = entries.map(([cat, v], i) =>
+    `<li><span><i class="dot" style="background:${PALETTE[i % PALETTE.length]}"></i>${cat}</span><strong>${formatBRL(v)}</strong></li>`).join('');
+  return `<div class="donut"><svg viewBox="0 0 132 132" role="img" aria-label="Por categoria">${segs}` +
+    `<text x="66" y="63" text-anchor="middle" font-size="16" font-weight="800" fill="currentColor">${shortBRL(total)}</text>` +
+    `<text x="66" y="79" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">12 meses</text></svg>` +
+    `<ul class="clean" style="flex:1;margin:0">${leg}</ul></div>`;
+}
+
 // ---------- render ----------
 function render() {
   $('#helloName').textContent = profile?.name || 'Compasso';
@@ -344,22 +397,19 @@ function render() {
     kpi('Disponível', cur.disponivel, cur.disponivel < 0 ? 'neg' : 'pos');
 
   const pct = cur.receita > 0 ? Math.round((cur.comprometido / cur.receita) * 100) : 0;
-  $('#homeAlerts').innerHTML =
-    `<p class="muted">${pct}% da receita comprometida · ` +
-    `Mês mais pesado: <strong>${sum.maisPesado.label} (${formatBRL(sum.maisPesado.comprometido)})</strong> · ` +
-    `Comprometido até: <strong>${sum.ultimoComCompromisso ? formatMonthLong(sum.ultimoComCompromisso) : '—'}</strong> · ` +
-    `Total futuro: <strong>${formatBRL(sum.totalFuturo)}</strong></p>`;
+  $('#chartMonths').innerHTML = monthsChart(proj);
+  $('#chartCats').innerHTML = catsDonut(proj);
+  const row = (t, v) => `<li><span>${t}</span><strong>${v}</strong></li>`;
+  $('#summaryBox').innerHTML =
+    row('% da receita comprometida', pct + '%') +
+    row('Mês mais pesado', `${sum.maisPesado.labelLong} (${formatBRL(sum.maisPesado.comprometido)})`) +
+    row('Comprometido até', sum.ultimoComCompromisso ? formatMonthLong(sum.ultimoComCompromisso) : '—') +
+    row('Total futuro (12 meses)', formatBRL(proj.slice(0, 12).reduce((s, p) => s + p.comprometido, 0)));
 
   $('#faturas').innerHTML = proj.slice(0, 6).map((p) =>
     `<li><span>${p.labelLong}</span><strong>${formatBRL(p.cartao)}</strong></li>`).join('') || '<li>Nada no cartão. 🎉</li>';
   const lastCard = [...proj].reverse().find((p) => p.cartao > 0);
   $('#faturaFim').textContent = lastCard ? `Cartão comprometido até ${formatMonthLong(lastCard.month)}.` : '';
-
-  const max = Math.max(1, ...proj.slice(0, 12).map((p) => p.comprometido));
-  $('#bars').innerHTML = proj.slice(0, 12).map((p) =>
-    `<div class="row between" style="font-size:15px"><span style="width:70px">${p.label}</span>` +
-    `<div class="bar" style="flex:1"><i style="width:${Math.round((p.comprometido / max) * 100)}%"></i></div>` +
-    `<strong style="width:86px;text-align:right">${formatBRL(p.comprometido)}</strong></div>`).join('');
 
   const occ = proj.flatMap((p) => p.itens.map((i) => ({ ...i, refMonth: p.month }))).slice(0, 12);
   $('#timeline').innerHTML = occ.map((o) =>

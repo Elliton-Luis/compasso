@@ -1,6 +1,8 @@
 /* Compasso — projeção financeira pessoal. Mobile-first, sem dependências.
    Temas = cor de fundo do app (topo, base, telas). Modo = claro (branco pastel) / escuro (azul escuro). */
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+body.locked nav.tabs,body.locked header.top .actions{display:none}
 :root{
   --card:#ffffff; --ink:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --accent:#2563eb; --accent-ink:#ffffff; --accent-soft:#dbeafe;
@@ -55,6 +57,10 @@ ul.clean li:first-child{border-top:0}
 .pill.cartao{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
 .bar{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:8px}
 .bar > i{display:block;height:100%;background:var(--accent)}
+.chart svg{width:100%;height:auto;display:block}
+.donut{display:flex;gap:14px;align-items:center}
+.donut svg{width:150px;flex:none}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:baseline}
 form.compact{display:grid;gap:12px}
 label.f{display:grid;gap:6px;font-size:15px;color:var(--muted)}
 input,select,button{font:inherit}
