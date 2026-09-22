@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="azul">
+<html lang="pt-BR" data-theme="azul" data-mode="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -13,8 +13,9 @@
 <body>
 <header class="top">
   <div class="top-inner">
-    <h1>Alicia <span class="badge" id="lockBadge">local</span></h1>
+    <h1><span id="helloName">Alicia</span> <span class="badge" id="lockBadge">local</span></h1>
     <div class="actions row no-print">
+      <button class="btn small ghost" id="btnLockNow" title="Bloquear">🔒</button>
       <button class="btn small ghost" id="btnExport" title="Backup">⬇</button>
       <button class="btn small ghost" id="btnPrint" title="PDF">🖨</button>
     </div>
@@ -22,11 +23,30 @@
 </header>
 
 <main id="main">
+  <div id="setupView" class="card lock" hidden>
+    <h2>Criar meu perfil</h2>
+    <p class="muted" id="setupHint">Cadastro único: seu nome aparece no topo e a senha protege seus dados. Depois, a entrada pede só a senha.</p>
+    <input id="setupName" maxlength="30" placeholder="Seu nome" autocomplete="given-name" style="max-width:280px">
+    <div id="setupPassFields" style="display:grid;gap:10px;place-items:center;width:100%">
+      <input id="setupPass" type="password" placeholder="Senha (mín. 4 caracteres)" autocomplete="new-password" style="max-width:280px">
+      <input id="setupPass2" type="password" placeholder="Repetir senha" autocomplete="new-password" style="max-width:280px">
+    </div>
+    <button class="btn" id="btnSetup" style="max-width:280px">Criar perfil</button>
+    <p class="muted" id="setupErr"></p>
+    <div class="token" id="tokenBox" hidden style="max-width:280px">
+      <p class="muted" style="margin:0 0 4px">Seu token de cadastro (anote):</p>
+      <strong id="tokenValue"></strong>
+      <p class="muted" id="tokenHint">Guarde-o. Ele identifica seu perfil neste aparelho.</p>
+      <button class="btn" id="btnTokenGo">Começar →</button>
+    </div>
+  </div>
+
   <div id="lockView" class="card lock" hidden>
-    <h2>Protegido por senha</h2>
-    <p class="muted">Os dados locais estão criptografados (AES-GCM).</p>
+    <h2 id="lockHello">Protegido por senha</h2>
+    <p class="muted">Digite sua senha para entrar.</p>
     <input id="unlockPass" type="password" placeholder="Senha" autocomplete="current-password" style="max-width:280px">
-    <button class="btn" id="btnUnlock" style="max-width:280px">Desbloquear</button>
+    <label class="muted row" style="gap:6px"><input type="checkbox" id="rememberMe" style="width:auto"> <span id="rememberLabel">Lembrar de mim</span></label>
+    <button class="btn" id="btnUnlock" style="max-width:280px">Entrar</button>
     <p class="muted" id="unlockErr"></p>
   </div>
 
@@ -102,15 +122,35 @@
   <!-- AJUSTES -->
   <section class="view" id="view-settings" aria-label="Ajustes">
     <div class="card">
-      <h2>Cor principal (12 temas)</h2>
+      <h2>Perfil</h2>
+      <div class="compact">
+        <label class="f">Nome (aparece no topo)<input id="setName" maxlength="30" autocomplete="off"></label>
+        <div class="row"><button class="btn small" id="btnSaveName">Salvar nome</button></div>
+        <p class="muted">Token de cadastro: <strong id="setToken" style="letter-spacing:.1em"></strong> <button class="btn small ghost" id="btnCopyToken">Copiar</button></p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Aparência</h2>
+      <p class="muted">Modo</p>
+      <div class="seg" style="margin-bottom:12px">
+        <button id="modeLight" aria-pressed="true">☀️ Claro</button>
+        <button id="modeDark" aria-pressed="false">🌙 Escuro</button>
+      </div>
+      <p class="muted">Cor de fundo (12 temas)</p>
       <div class="themes" id="themes"></div>
     </div>
     <div class="card">
-      <h2>Proteção por senha</h2>
-      <p class="muted">Criptografa o LocalStorage com AES-GCM (PBKDF2, 120k iterações). A senha não é armazenada.</p>
+      <h2>Senha e sessão</h2>
       <div class="compact">
-        <input id="secPass" type="password" placeholder="Nova senha" autocomplete="new-password">
-        <div class="row"><button class="btn small" id="btnLock">Ativar proteção</button><button class="btn small danger" id="btnUnlock2">Remover</button></div>
+        <p class="muted" style="margin:0">Dados criptografados (AES-GCM). A senha não é armazenada.</p>
+        <div class="f2">
+          <label class="f">Nova senha<input id="secPass" type="password" placeholder="Nova senha" autocomplete="new-password"></label>
+          <label class="f">Repetir<input id="secPass2" type="password" placeholder="Repetir" autocomplete="new-password"></label>
+        </div>
+        <div class="row"><button class="btn small" id="btnChangePass">Trocar senha</button></div>
+        <label class="f">Lembrar de mim por<select id="rememberMinutes"></select></label>
+        <p class="muted" style="margin:0">O "lembrar" dispensa a senha até o prazo expirar. Só use em aparelho pessoal.</p>
+        <div class="row"><button class="btn small ghost" id="btnForget">Esquecer este aparelho</button><button class="btn small danger" id="btnLock2">Bloquear agora</button></div>
         <p class="muted" id="secMsg"></p>
       </div>
     </div>

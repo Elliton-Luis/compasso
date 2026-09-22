@@ -1,6 +1,8 @@
-// storage.js — persistência local + criptografia opcional (Web Crypto AES-GCM + PBKDF2) + backup.
+// storage.js — persistência local + perfil + criptografia (Web Crypto AES-GCM + PBKDF2) + backup.
 const LS_KEY = 'alicia.finance.v1';
-const LS_META = 'alicia.finance.meta.v1'; // { enc:bool, saltB64, ivB64? }
+const LS_META = 'alicia.finance.meta.v1'; // { enc:bool }
+const LS_PROFILE = 'alicia.profile.v1'; // { name, token, createdAt, theme, mode, rememberMinutes } (texto puro)
+const LS_REMEMBER = 'alicia.remember.v1'; // { exp, p } — lembrar de mim (opt-in, com validade)
 
 function b64encode(buf) {
   const bytes = new Uint8Array(buf);
@@ -80,14 +82,81 @@ export async function enableEncryption(state, password) {
   localStorage.setItem(LS_META, JSON.stringify({ enc: true }));
 }
 
-export async function disableEncryption(state) {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-  localStorage.setItem(LS_META, JSON.stringify({ enc: false }));
-}
-
 export function isEncrypted() {
   const meta = loadMeta();
   return !!(meta && meta.enc);
+}
+
+// ---- Perfil (nome exibido no topo + token de cadastro + preferências) ----
+export const REMEMBER_OPTIONS = [
+  { minutes: 60, label: '1 hora' },
+  { minutes: 480, label: '8 horas' },
+  { minutes: 1440, label: '1 dia' },
+  { minutes: 10080, label: '7 dias' },
+  { minutes: 43200, label: '30 dias' },
+];
+
+export function defaultProfile() {
+  return { name: '', token: '', createdAt: '', theme: 'azul', mode: 'light', rememberMinutes: 1440 };
+}
+
+export function loadProfile() {
+  try {
+    const p = JSON.parse(localStorage.getItem(LS_PROFILE) || 'null');
+    return p ? { ...defaultProfile(), ...p } : null;
+  } catch { return null; }
+}
+
+export function saveProfile(profile) {
+  localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+}
+
+// Token de cadastro: gerado uma única vez, formato legível XXXX-XXXX.
+export function makeToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(5));
+  const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 8; i++) s += abc[bytes[i % bytes.length] % abc.length];
+  return s.slice(0, 4) + '-' + s.slice(4);
+}
+
+// ---- Lembrar de mim (opt-in: guarda a senha ofuscada com validade) ----
+function b64strEncode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let s = '';
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s);
+}
+function b64strDecode(b64) {
+  const s = atob(b64);
+  const bytes = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+export function setRemember(password, minutes) {
+  const exp = Date.now() + Math.max(1, minutes) * 60 * 1000;
+  localStorage.setItem(LS_REMEMBER, JSON.stringify({ exp, p: b64strEncode(password) }));
+}
+
+export function getRemember() {
+  try {
+    const r = JSON.parse(localStorage.getItem(LS_REMEMBER) || 'null');
+    if (!r || !r.exp || !r.p) return null;
+    if (Date.now() > r.exp) { clearRemember(); return null; }
+    return { password: b64strDecode(r.p), exp: r.exp };
+  } catch { return null; }
+}
+
+export function clearRemember() {
+  localStorage.removeItem(LS_REMEMBER);
+}
+
+export function wipeAll() {
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_META);
+  localStorage.removeItem(LS_PROFILE);
+  localStorage.removeItem(LS_REMEMBER);
 }
 
 // ---- Backup ----

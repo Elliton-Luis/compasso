@@ -1,11 +1,17 @@
 import { project, summarize, simulate, formatBRL, formatMonthLong, currentMonthKey, toCents, CATEGORIAS, installmentValues } from './finance.js';
-import { loadState, saveState, defaultState, exportJSONString, importJSONString, exportMarkdown, enableEncryption, disableEncryption, isEncrypted, uid } from './storage.js';
+import { loadState, saveState, defaultState, exportJSONString, importJSONString, exportMarkdown, enableEncryption, isEncrypted, uid, loadProfile, saveProfile, defaultProfile, makeToken, setRemember, getRemember, clearRemember, wipeAll, REMEMBER_OPTIONS } from './storage.js';
 
 const $ = (s) => document.querySelector(s);
 let state = defaultState();
+let profile = null;
 let sessionPass = null;
+let migrationPass = null; // senha de dados legados (sem perfil) até concluir o cadastro
 
-const THEMES = ['rosa','vermelho','laranja','amarelo','verde','esmeralda','ciano','azul','indigo','roxo','magenta','cinza'];
+const THEMES = [
+  ['rosa', '#ec4899'], ['vermelho', '#dc2626'], ['laranja', '#ea580c'], ['amarelo', '#a16207'],
+  ['verde', '#16a34a'], ['esmeralda', '#059669'], ['ciano', '#0891b2'], ['azul', '#2563eb'],
+  ['indigo', '#4f46e5'], ['roxo', '#7c3aed'], ['magenta', '#c026d3'], ['cinza', '#4b5563'],
+];
 
 function parseBR(v) {
   if (v == null || v === '') return 0;
@@ -15,24 +21,84 @@ function parseBR(v) {
 }
 
 // ---------- boot ----------
+function showOnly(id) {
+  for (const v of ['#setupView', '#lockView', '#appViews']) $(v).hidden = v !== '#' + id;
+}
+
+function applyProfileToLock() {
+  const name = profile && profile.name ? profile.name : '';
+  $('#lockHello').textContent = name ? `Olá, ${name} 👋` : 'Protegido por senha';
+  const mins = profile?.rememberMinutes || 1440;
+  const opt = REMEMBER_OPTIONS.find((o) => o.minutes === mins) || REMEMBER_OPTIONS[2];
+  $('#rememberLabel').textContent = `Lembrar de mim (por ${opt.label})`;
+}
+
 async function boot() {
-  const first = await loadState(null);
-  if (first && first.__needsPassword) {
-    $('#lockView').hidden = false;
-    $('#appViews').hidden = true;
+  profile = loadProfile();
+  applyTheme();
+  // 1) Lembrar de mim válido? entra direto.
+  const remembered = getRemember();
+  if (remembered && (profile || isEncrypted())) {
+    try {
+      const st = await loadState(remembered.password);
+      if (!st.__needsPassword) {
+        state = st; sessionPass = remembered.password;
+        if (!profile) profile = { ...defaultProfile(), name: '', token: makeToken(), createdAt: new Date().toISOString() };
+        applyTheme(); afterUnlock(); return;
+      }
+    } catch { clearRemember(); }
+  }
+  // 2) Sem perfil → cadastro (novo ou adotando dados legados).
+  const raw = localStorage.getItem('alicia.finance.v1');
+  const enc = isEncrypted();
+  if (!profile && !raw) { startSetup(false); return; }
+  if (!profile && raw && !enc) {
+    try { state = await loadState(null); } catch { state = defaultState(); }
+    startSetup(true); return; // dados legados sem senha: adota e protege
+  }
+  if (!profile && raw && enc) {
+    // Legado criptografado sem perfil: pede a senha antiga uma vez.
+    showOnly('lockView');
+    $('#lockHello').textContent = 'Protegido por senha';
     return;
   }
-  state = first;
-  applyTheme();
+  // 3) Perfil existe → login só com senha.
+  if (enc) { applyProfileToLock(); showOnly('lockView'); return; }
+  state = await loadState(null);
   afterUnlock();
 }
 
+// Cadastro único: nome + senha → gera token, criptografa, mostra token uma vez.
+function startSetup(adopting) {
+  showOnly('setupView');
+  $('#setupHint').textContent = adopting
+    ? 'Encontramos seus dados. Complete seu perfil para protegê-los com senha.'
+    : 'Cadastro único: seu nome aparece no topo e a senha protege seus dados. Depois, a entrada pede só a senha.';
+  $('#tokenBox').hidden = true;
+  $('#btnSetup').hidden = false;
+  $('#setupErr').textContent = '';
+}
+
+function finishSetup() {
+  applyTheme(); afterUnlock();
+}
+
 function afterUnlock() {
-  $('#lockView').hidden = true;
-  $('#appViews').hidden = false;
-  $('#lockBadge').textContent = isEncrypted() ? 'cripto 🔒' : 'local';
+  showOnly('appViews');
+  $('#lockBadge').textContent = isEncrypted() ? '🔒' : 'local';
+  $('#helloName').textContent = profile?.name || 'Alicia';
   initStatic();
   render();
+}
+
+function lock() {
+  sessionPass = null; migrationPass = null;
+  clearRemember();
+  $('#unlockPass').value = '';
+  $('#rememberMe').checked = false;
+  $('#unlockErr').textContent = '';
+  applyProfileToLock();
+  showOnly('lockView');
 }
 
 async function persist() {
@@ -54,24 +120,51 @@ function initStatic() {
   $('#fCat').innerHTML = CATEGORIAS.map((c) => `<option>${c}</option>`).join('');
   const now = currentMonthKey();
   $('#fInicio').value = now; $('#mRef').value = now;
-  // temas
+  // temas de fundo (swatches com a própria cor)
   $('#themes').innerHTML = '';
-  for (const t of THEMES) {
+  for (const [t, color] of THEMES) {
     const b = document.createElement('button');
-    b.textContent = t; b.setAttribute('aria-pressed', String((state.theme || 'azul') === t));
-    b.onclick = async () => { state.theme = t; applyTheme(); await persist(); initStaticThemes(); render(); };
+    b.textContent = t; b.setAttribute('aria-pressed', String((profile?.theme || 'azul') === t));
+    b.style.background = color; b.style.color = '#fff'; b.style.borderColor = 'transparent';
+    b.onclick = () => { profile.theme = t; saveProfile(profile); applyTheme(); initStaticThemes(); };
     b.dataset.themeBtn = t;
     $('#themes').appendChild(b);
   }
+  // modo claro/escuro
+  syncModeButtons();
+  $('#modeLight').onclick = () => setMode('light');
+  $('#modeDark').onclick = () => setMode('dark');
+  // lembrar de mim: opções de duração
+  $('#rememberMinutes').innerHTML = REMEMBER_OPTIONS.map((o) =>
+    `<option value="${o.minutes}">${o.label}</option>`).join('');
+  $('#rememberMinutes').value = String(profile?.rememberMinutes || 1440);
+  $('#rememberMinutes').onchange = () => {
+    profile.rememberMinutes = Number($('#rememberMinutes').value) || 1440;
+    saveProfile(profile); applyProfileToLock();
+    $('#secMsg').textContent = 'Preferência de "lembrar" atualizada.';
+  };
+  // perfil
+  $('#setName').value = profile?.name || '';
+  $('#setToken').textContent = profile?.token || '—';
   bindOnce();
 }
 
+function setMode(mode) {
+  profile.mode = mode; saveProfile(profile); applyTheme(); syncModeButtons();
+}
+function syncModeButtons() {
+  const dark = (profile?.mode || 'light') === 'dark';
+  $('#modeLight').setAttribute('aria-pressed', String(!dark));
+  $('#modeDark').setAttribute('aria-pressed', String(dark));
+}
+
 function initStaticThemes() {
-  document.querySelectorAll('[data-theme-btn]').forEach((b) => b.setAttribute('aria-pressed', String(state.theme === b.dataset.themeBtn)));
+  document.querySelectorAll('[data-theme-btn]').forEach((b) => b.setAttribute('aria-pressed', String(profile.theme === b.dataset.themeBtn)));
 }
 
 function applyTheme() {
-  document.documentElement.setAttribute('data-theme', state.theme || 'azul');
+  document.documentElement.setAttribute('data-theme', profile?.theme || state.theme || 'azul');
+  document.documentElement.setAttribute('data-mode', profile?.mode || 'light');
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2563eb');
 }
 
@@ -98,17 +191,75 @@ function bindOnce() {
     if ($('#mGua').value !== '') state.savings[m] = g;
     await persist(); render();
   };
-  $('#btnUnlock').onclick = async () => {
+  $('#btnSetup').onclick = async () => {
+    const name = $('#setupName').value.trim();
+    const p1 = $('#setupPass').value, p2 = $('#setupPass2').value;
+    if (!name) { $('#setupErr').textContent = 'Informe seu nome.'; return; }
+    if (migrationPass) {
+      // Adotando dados legados já desbloqueados: só nome, mantém a senha atual.
+      profile = { ...defaultProfile(), name, token: makeToken(), createdAt: new Date().toISOString() };
+      saveProfile(profile); finishSetup(); return;
+    }
+    if (p1.length < 4) { $('#setupErr').textContent = 'A senha precisa de ao menos 4 caracteres.'; return; }
+    if (p1 !== p2) { $('#setupErr').textContent = 'As senhas não conferem.'; return; }
+    profile = { ...defaultProfile(), name, token: makeToken(), createdAt: new Date().toISOString() };
+    saveProfile(profile);
+    await enableEncryption(state, p1);
+    sessionPass = p1;
+    $('#tokenValue').textContent = profile.token;
+    $('#tokenBox').hidden = false;
+    $('#btnSetup').hidden = true;
+    $('#setupErr').textContent = '';
+  };
+  $('#btnTokenGo').onclick = () => { applyTheme(); afterUnlock(); };
+  const tryUnlock = async () => {
     const p = $('#unlockPass').value;
-    try { state = await loadState(p); sessionPass = p; applyTheme(); afterUnlock(); }
-    catch { $('#unlockErr').textContent = 'Senha incorreta.'; }
+    try {
+      // Legado criptografado sem perfil: captura a senha e segue p/ cadastro do nome.
+      if (!profile && isEncrypted()) {
+        const st = await loadState(p);
+        if (st.__needsPassword) throw new Error('bad');
+        state = st; sessionPass = p; migrationPass = p;
+        startSetup(true); return;
+      }
+      const st = await loadState(p);
+      if (st.__needsPassword) throw new Error('bad');
+      state = st; sessionPass = p;
+      // Migra tema antigo (guardado no state) para o perfil.
+      if (profile && !profile.migratedTheme && st.theme) {
+        profile.theme = st.theme; profile.migratedTheme = true; saveProfile(profile);
+      }
+      if ($('#rememberMe').checked) setRemember(p, profile?.rememberMinutes || 1440);
+      applyTheme(); afterUnlock();
+    } catch { $('#unlockErr').textContent = 'Senha incorreta.'; }
   };
-  $('#btnLock').onclick = async () => {
-    const p = $('#secPass').value; if (p.length < 4) { $('#secMsg').textContent = 'Use ao menos 4 caracteres.'; return; }
-    await enableEncryption(state, p); sessionPass = p;
-    $('#secMsg').textContent = 'Proteção ativada.'; $('#lockBadge').textContent = 'cripto 🔒';
+  $('#btnUnlock').onclick = tryUnlock;
+  $('#unlockPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
+  $('#btnChangePass').onclick = async () => {
+    const p1 = $('#secPass').value, p2 = $('#secPass2').value;
+    if (p1.length < 4) { $('#secMsg').textContent = 'Use ao menos 4 caracteres.'; return; }
+    if (p1 !== p2) { $('#secMsg').textContent = 'As senhas não conferem.'; return; }
+    await enableEncryption(state, p1);
+    sessionPass = p1;
+    if (getRemember()) setRemember(p1, profile.rememberMinutes || 1440);
+    $('#secPass').value = ''; $('#secPass2').value = '';
+    $('#secMsg').textContent = 'Senha trocada.';
   };
-  $('#btnUnlock2').onclick = async () => { await disableEncryption(state); sessionPass = null; $('#secMsg').textContent = 'Proteção removida.'; $('#lockBadge').textContent = 'local'; };
+  $('#btnSaveName').onclick = () => {
+    const n = $('#setName').value.trim();
+    if (!n) return;
+    profile.name = n; saveProfile(profile);
+    $('#helloName').textContent = n; applyProfileToLock();
+    $('#secMsg').textContent = 'Nome atualizado.';
+  };
+  $('#btnCopyToken').onclick = async () => {
+    try { await navigator.clipboard.writeText(profile.token); $('#secMsg').textContent = 'Token copiado.'; }
+    catch { $('#secMsg').textContent = 'Token: ' + profile.token; }
+  };
+  $('#btnForget').onclick = () => { clearRemember(); $('#secMsg').textContent = 'Aparelho esquecido. Na próxima entrada a senha será pedida.'; };
+  const doLock = () => lock();
+  $('#btnLock2').onclick = doLock;
+  $('#btnLockNow').onclick = doLock;
   const dl = (name, text, type) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
@@ -125,10 +276,10 @@ function bindOnce() {
     catch { alert('Arquivo inválido.'); }
   };
   $('#btnWipe').onclick = async () => {
-    if (!confirm('Apagar TODOS os dados locais?')) return;
-    state = defaultState(); sessionPass = null;
-    localStorage.removeItem('alicia.finance.v1'); localStorage.removeItem('alicia.finance.meta.v1');
-    applyTheme(); render();
+    if (!confirm('Apagar TODOS os dados locais (perfil + compromissos)?')) return;
+    wipeAll();
+    state = defaultState(); profile = null; sessionPass = null; migrationPass = null;
+    startSetup(false);
   };
 }
 
@@ -159,6 +310,7 @@ function showSim() {
 
 // ---------- render ----------
 function render() {
+  $('#helloName').textContent = profile?.name || 'Alicia';
   const proj = project(state);
   const sum = summarize(proj);
   const cur = proj[0];

@@ -11,9 +11,10 @@ Entrada simples, análise poderosa: cadastre `descrição + valor + tipo + parce
 - Parcelados (`R$ 600 em 6x` gera 6 meses) e recorrentes mensais com fim opcional
 - Projeção mensal futura, próximas faturas, linha temporal, mês mais pesado, último mês comprometido, % da receita, total futuro
 - Simulação antes de salvar ("se eu assumir +R$ 200/mês?")
-- 8 categorias simples, 12 temas de cor, mobile-first
+- 8 categorias simples, 12 temas de fundo, modo claro/escuro, mobile-first
+- Perfil único (nome + senha + token de cadastro), login só com senha, lembrar de mim com prazo configurável
 - Backup: JSON (exportar/importar), Markdown legível, PDF via impressão
-- Proteção opcional por senha (AES-GCM + PBKDF2 via Web Crypto; senha nunca armazenada)
+- Criptografia sempre ativa (AES-GCM + PBKDF2 via Web Crypto; senha nunca armazenada)
 - PWA offline (manifest + service worker)
 
 ## Tecnologias
@@ -41,9 +42,27 @@ node --test test-finance.mjs
 
 Com servidor local ou HTTPS: o navegador oferece "Instalar". Depois de instalado funciona offline (cache-first).
 
+## Perfil
+
+Cadastro único de nome + senha. Gera um token de cadastro (anote — identifica seu perfil no aparelho). Depois, a entrada pede só a senha. O nome aparece no topo do app.
+
+Ajustes → Perfil: trocar nome, ver/copiar o token.
+
+## Sessão (lembrar de mim)
+
+Na tela de entrada, marque "Lembrar de mim" para dispensar a senha até o prazo expirar. Ajustes → Senha e sessão define o prazo (1h, 8h, 1 dia, 7 dias, 30 dias). "Esquecer este aparelho" ou "Bloquear agora" encerra na hora. Só use em aparelho pessoal: o lembrar guarda a senha ofuscada no aparelho até expirar.
+
+## Aparência
+
+Ajustes → Aparência: modo ☀️ Claro (fundo branco pastel) ou 🌙 Escuro (fundo azul escuro), + 12 temas que pintam o fundo do app (topo, base, botões e telas).
+
 ## Dados
 
-`localStorage` chave `alicia.finance.v1`: `{ incomes:{YYYY-MM:centavos}, savings:{...}, commitments:[{id,descricao,valorCentavos,tipo,categoria,parcelas,inicio,recorrente,fim}], theme }`. Valores derivados (parcela do mês, totais) são sempre calculados, nunca armazenados.
+`localStorage`:
+
+- `alicia.finance.v1`: dados financeiros **sempre criptografados** (AES-GCM). Valores derivados (parcela do mês, totais) são calculados, nunca armazenados.
+- `alicia.profile.v1`: perfil em texto puro (nome, token, tema, modo, prazo do lembrar) — necessário para mostrar o nome na tela de entrada.
+- `alicia.remember.v1`: presente só com "lembrar" ativo; guarda a senha ofuscada com validade.
 
 ## Backup
 
@@ -51,14 +70,14 @@ Ajustes → Exportar JSON / Markdown / PDF. Restaurar via seletor de arquivo JSO
 
 ## Segurança
 
-Ajustes → Proteção por senha: cifra o JSON com AES-GCM (chave PBKDF2-SHA256, 120k iterações). Sem a senha os dados não abrem.
+Os dados financeiros são cifrados com AES-GCM (chave PBKDF2-SHA256, 120k iterações). Sem a senha não abrem. A senha nunca é armazenada — exceto com "lembrar de mim" ativo (ofuscada, com validade configurável).
 
 ## Estrutura
 
-- `index.html` — layout + 4 visões (Início, Novo, Meses, Ajustes)
-- `styles.css` — mobile-first, 12 temas via `[data-theme]`, print p/ PDF
+- `index.html` — layout + cadastro, entrada, 4 visões (Início, Novo, Meses, Ajustes)
+- `styles.css` — mobile-first, 12 temas de fundo via `[data-theme]`, modo claro/escuro via `[data-mode]`, print p/ PDF
 - `finance.js` — regras puras (parcelas, recorrência, projeção, resumo, simulação)
-- `storage.js` — persistência, cripto, backup (JSON/Markdown)
+- `storage.js` — persistência, perfil, lembrar, cripto, backup (JSON/Markdown)
 - `app.js` — UI/orquestração
 - `sw.js`, `manifest.webmanifest`, `icon.svg` — PWA
 - `test-finance.mjs` — testes Node das regras

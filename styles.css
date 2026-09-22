@@ -1,32 +1,40 @@
-/* Alicia — projeção financeira pessoal. Mobile-first, sem dependências. */
+/* Alicia — projeção financeira pessoal. Mobile-first, sem dependências.
+   Temas = cor de fundo do app (topo, base, telas). Modo = claro (branco pastel) / escuro (azul escuro). */
 *{box-sizing:border-box}
 :root{
-  --bg:#fafafa; --card:#ffffff; --ink:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
+  --card:#ffffff; --ink:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --accent:#2563eb; --accent-ink:#ffffff; --accent-soft:#dbeafe;
+  --bg:#eef3fe;
   --danger:#dc2626; --ok:#16a34a; --warn:#d97706;
   --radius:14px; --max:640px;
 }
-[data-theme="rosa"]{--accent:#ec4899;--accent-soft:#fce7f3}
-[data-theme="vermelho"]{--accent:#dc2626;--accent-soft:#fee2e2}
-[data-theme="laranja"]{--accent:#ea580c;--accent-soft:#ffedd5}
-[data-theme="amarelo"]{--accent:#a16207;--accent-soft:#fef9c3}
-[data-theme="verde"]{--accent:#16a34a;--accent-soft:#dcfce7}
-[data-theme="esmeralda"]{--accent:#059669;--accent-soft:#d1fae5}
-[data-theme="ciano"]{--accent:#0891b2;--accent-soft:#cffafe}
-[data-theme="azul"]{--accent:#2563eb;--accent-soft:#dbeafe}
-[data-theme="indigo"]{--accent:#4f46e5;--accent-soft:#e0e7ff}
-[data-theme="roxo"]{--accent:#7c3aed;--accent-soft:#ede9fe}
-[data-theme="magenta"]{--accent:#c026d3;--accent-soft:#fae8ff}
-[data-theme="cinza"]{--accent:#4b5563;--accent-soft:#e5e7eb}
-@media (prefers-color-scheme: dark){
-  :root{--bg:#0f1115;--card:#171a21;--ink:#f3f4f6;--muted:#9ca3af;--line:#262b36}
+/* 12 temas de fundo: cada um define a cor principal (chrome do topo/base/botões)
+   e o pastel de fundo do modo claro. */
+[data-theme="rosa"]{--accent:#ec4899;--accent-soft:#fce7f3;--bg:#fdf0f6}
+[data-theme="vermelho"]{--accent:#dc2626;--accent-soft:#fee2e2;--bg:#fef1f1}
+[data-theme="laranja"]{--accent:#ea580c;--accent-soft:#ffedd5;--bg:#fef4ec}
+[data-theme="amarelo"]{--accent:#a16207;--accent-soft:#fef9c3;--bg:#fdf9e3}
+[data-theme="verde"]{--accent:#16a34a;--accent-soft:#dcfce7;--bg:#eef9f0}
+[data-theme="esmeralda"]{--accent:#059669;--accent-soft:#d1fae5;--bg:#ecf8f3}
+[data-theme="ciano"]{--accent:#0891b2;--accent-soft:#cffafe;--bg:#ecf8fb}
+[data-theme="azul"]{--accent:#2563eb;--accent-soft:#dbeafe;--bg:#eef3fe}
+[data-theme="indigo"]{--accent:#4f46e5;--accent-soft:#e0e7ff;--bg:#eff0fe}
+[data-theme="roxo"]{--accent:#7c3aed;--accent-soft:#ede9fe;--bg:#f3effd}
+[data-theme="magenta"]{--accent:#c026d3;--accent-soft:#fae8ff;--bg:#fbeefd}
+[data-theme="cinza"]{--accent:#4b5563;--accent-soft:#e5e7eb;--bg:#f3f4f6}
+/* Modo escuro: fundo geral azul escuro (com leve matiz do tema). */
+[data-mode="dark"]{
+  --bg:color-mix(in srgb, var(--accent) 13%, #081426);
+  --card:#0f2342; --ink:#e9eff9; --muted:#93a4bd; --line:#22395e;
+  --accent-soft:color-mix(in srgb, var(--accent) 28%, #0f2342);
 }
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-header.top{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line)}
+header.top{position:sticky;top:0;z-index:10;background:var(--accent);border-bottom:0}
 .top-inner{max-width:var(--max);margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
-.top-inner h1{font-size:17px;margin:0;flex:1}
-.badge{font-size:12px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:700}
+.top-inner h1{font-size:17px;margin:0;flex:1;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header.top .btn.ghost{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.5)}
+.badge{font-size:12px;background:rgba(255,255,255,.2);color:#fff;border-radius:999px;padding:2px 10px;font-weight:700}
 main{max-width:var(--max);margin:0 auto;padding:14px 14px 96px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
 .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 10px}
@@ -55,16 +63,22 @@ input,select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:9px}
 .btn.small{width:auto;padding:8px 12px;font-size:14px}
 .btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);z-index:10}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--accent);border-top:0;z-index:10}
 .tabs-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
-.tabs button{background:none;border:0;padding:12px 4px;color:var(--muted);font-size:12px;cursor:pointer}
-.tabs button[aria-selected="true"]{color:var(--accent);font-weight:800}
+.tabs button{background:none;border:0;padding:12px 4px;color:rgba(255,255,255,.75);font-size:12px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:#fff;font-weight:800}
 section.view{display:none}
 section.view.active{display:block}
 .themes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .themes button{border:2px solid transparent;border-radius:10px;padding:10px 0;cursor:pointer;font-size:12px;background:var(--bg);color:var(--ink)}
 .themes button[aria-pressed="true"]{border-color:var(--accent)}
 .sim{border:1px dashed var(--accent);border-radius:var(--radius);padding:12px;margin-top:10px;background:var(--accent-soft)}
+.token{background:var(--bg);border:1px dashed var(--accent);border-radius:10px;padding:12px;text-align:center}
+.token strong{font-size:24px;letter-spacing:.15em}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+[data-mode="dark"] .seg button[aria-pressed="true"]{color:var(--ink)}
 details{border-top:1px solid var(--line);padding:8px 0}
 summary{cursor:pointer;font-weight:600;font-size:14px}
 .lock{display:grid;gap:10px;place-items:center;text-align:center;padding:32px 16px}
