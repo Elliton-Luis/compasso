@@ -112,7 +112,16 @@
       </form>
     </div>
     <div class="card">
+      <h2>Quanto ganho por mês</h2>
+      <form class="compact" id="formSalario">
+        <label class="f">Salário mensal (R$) — vale para todos os meses<input id="sSal" inputmode="decimal" placeholder="3000,00"></label>
+        <button class="btn" type="submit">Salvar salário</button>
+      </form>
+      <p class="muted" id="salInfo"></p>
+    </div>
+    <div class="card">
       <h2>Receita / guardar do mês</h2>
+      <p class="muted" style="margin-top:0">Só use aqui para ajustar um mês específico (ex.: 13º, férias). Vazio = vale o salário.</p>
       <form class="compact" id="formMes">
         <label class="f">Mês<input id="mRef" type="month" required></label>
         <div class="f2">

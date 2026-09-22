@@ -144,7 +144,8 @@ export function project(state, opts = {}) {
     const cartao = occ.filter((o) => o.tipo === 'cartao').reduce((s, o) => s + o.valorCentavos, 0);
     const externo = occ.filter((o) => o.tipo !== 'cartao').reduce((s, o) => s + o.valorCentavos, 0);
     const comprometido = cartao + externo;
-    const receita = Math.round((state.incomes || {})[m] || 0);
+    // Receita do mês: valor específico > salário mensal fixo > 0.
+    const receita = Math.round((state.incomes || {})[m] ?? state.salarioCentavos ?? 0);
     const guardar = Math.round((state.savings || {})[m] || 0);
     const disponivel = receita - guardar - comprometido;
     const pct = receita > 0 ? comprometido / receita : 0;

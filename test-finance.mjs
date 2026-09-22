@@ -45,3 +45,28 @@ test('addMonths cruza ano', () => {
   assert.equal(addMonths('2026-12', 1), '2027-01');
   assert.equal(addMonths('2026-10', 6), '2027-04');
 });
+
+test('salário mensal vale para todos os meses projetados', () => {
+  const state = {
+    salarioCentavos: 300000, incomes: {}, savings: {},
+    commitments: [
+      { id: 'a', descricao: 'Acad', valorCentavos: 10000, tipo: 'externo', inicio: '2026-10', recorrente: true, fim: null },
+    ],
+  };
+  const proj = project(state, { start: '2026-10', months: 3 });
+  for (const p of proj) {
+    assert.equal(p.receita, 300000);
+    assert.equal(p.disponivel, 300000 - 10000);
+  }
+});
+
+test('receita específica do mês tem prioridade sobre o salário', () => {
+  const state = {
+    salarioCentavos: 300000, incomes: { '2026-11': 400000 }, savings: {},
+    commitments: [],
+  };
+  const proj = project(state, { start: '2026-10', months: 3 });
+  assert.equal(proj[0].receita, 300000);
+  assert.equal(proj[1].receita, 400000);
+  assert.equal(proj[2].receita, 300000);
+});

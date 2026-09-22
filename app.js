@@ -264,6 +264,12 @@ function bindOnce() {
     hideSim(); render();
     document.querySelector('[data-tab="home"]').click();
   };
+  $('#formSalario').onsubmit = async (e) => {
+    e.preventDefault();
+    if ($('#sSal').value === '') return;
+    state.salarioCentavos = parseBR($('#sSal').value);
+    await persist(); render();
+  };
   $('#formMes').onsubmit = async (e) => {
     e.preventDefault();
     const m = $('#mRef').value; if (!m) return;
@@ -345,7 +351,9 @@ function showSim() {
   const proj = simulate(state, c);
   const sum = summarize(proj);
   const box = $('#simBox'); box.hidden = false;
-  box.innerHTML = `<strong>Se adicionar: ${formatBRL(c.recorrente ? c.valorCentavos : Math.round(c.valorCentavos / Math.max(1, c.parcelas)))}/mês.</strong><br>` +
+  const baseMes = project(state)[0];
+  const perMes = c.recorrente ? c.valorCentavos : Math.round(c.valorCentavos / Math.max(1, c.parcelas));
+  box.innerHTML = `<strong>Se adicionar (${formatBRL(perMes)}/mês): disponível este mês ${formatBRL(baseMes.disponivel)} → ${formatBRL(proj[0].disponivel)}.</strong><br>` +
     `<span class="muted">Mês mais pesado passa a ser ${sum.maisPesado.labelLong} (${formatBRL(sum.maisPesado.comprometido)}). ` +
     `Dinheiro comprometido até ${sum.ultimoComCompromisso || '—'}. Total futuro: ${formatBRL(sum.totalFuturo)}.</span>`;
 }
@@ -456,6 +464,13 @@ function render() {
   });
 
   $('#dataInfo').textContent = `${state.commitments.length} compromissos · ${Object.keys(state.incomes).length} meses com receita · armazenamento: LocalStorage${isEncrypted() ? ' (criptografado)' : ''}.`;
+  // salário mensal: mostra o atual e explica o efeito
+  if (document.activeElement !== $('#sSal')) {
+    $('#sSal').value = state.salarioCentavos ? (state.salarioCentavos / 100).toLocaleString('pt-BR') : '';
+  }
+  $('#salInfo').textContent = state.salarioCentavos
+    ? `Valendo ${formatBRL(state.salarioCentavos)}/mês em toda a projeção e nas simulações.`
+    : 'Ainda sem salário: a projeção considera receita zero.';
   // pré-preenche receita/guardar do mês selecionado
   const ref = $('#mRef').value;
   if (ref && document.activeElement !== $('#mRec') && document.activeElement !== $('#mGua')) {

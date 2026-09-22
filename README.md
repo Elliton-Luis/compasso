@@ -7,10 +7,11 @@ Entrada simples, análise poderosa: cadastre `descrição + valor + tipo + parce
 ## Funcionalidades
 
 - Receita e valor a guardar por mês (`disponível = receita − guardar − compromissos`)
+- Salário mensal fixo que preenche todos os meses (dá para ajustar um mês específico, ex.: 13º)
 - Compromissos no cartão (impactam faturas) e externos (projetados sem ir p/ fatura)
 - Parcelados (`R$ 600 em 6x` gera 6 meses) e recorrentes mensais com fim opcional
 - Projeção mensal futura, próximas faturas, linha temporal, mês mais pesado, último mês comprometido, % da receita, total futuro
-- Simulação antes de salvar ("se eu assumir +R$ 200/mês?")
+- Simulação antes de salvar ("se eu assumir +R$ 200/mês?") — mostra o disponível deste mês antes e depois
 - 8 categorias simples, 12 temas de fundo, modo claro/escuro, mobile-first
 - Perfil único (nome + senha + token de cadastro), login só com senha, lembrar de mim com prazo configurável
 - Backup: JSON (exportar/importar), Markdown legível, PDF via impressão
