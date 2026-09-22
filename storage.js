@@ -11,6 +11,39 @@ const LEGACY_KEYS = {
   [LS_REMEMBER]: ['fluxo.remember.v1', 'alicia.remember.v1'],
 };
 
+// Aparência em chave dedicada + cookie: redundância para o tema/modo nunca se perderem.
+const LS_UI = 'compasso.ui.v1'; // { theme, mode }
+const UI_COOKIE = 'compasso_ui';
+
+export function saveUI(ui) {
+  const clean = { theme: ui.theme || 'azul', mode: ui.mode || 'light' };
+  try { localStorage.setItem(LS_UI, JSON.stringify(clean)); } catch { /* ignora */ }
+  try {
+    if (typeof document !== 'undefined') {
+      document.cookie = `${UI_COOKIE}=` + encodeURIComponent(JSON.stringify({ t: clean.theme, m: clean.mode })) + ';max-age=31536000;path=/;SameSite=Lax';
+    }
+  } catch { /* ignora */ }
+}
+
+export function loadUI() {
+  try {
+    const raw = localStorage.getItem(LS_UI);
+    if (raw) {
+      const o = JSON.parse(raw);
+      if (o && o.theme) return { theme: o.theme, mode: o.mode || 'light' };
+    }
+  } catch { /* ignora */ }
+  try {
+    const jar = (typeof document !== 'undefined' && typeof document.cookie === 'string') ? document.cookie : '';
+    const m = jar.match(/(?:^|;\s*)compasso_ui=([^;]+)/);
+    if (m) {
+      const o = JSON.parse(decodeURIComponent(m[1]));
+      if (o && o.t) return { theme: o.t, mode: o.m || 'light' };
+    }
+  } catch { /* ignora */ }
+  return null;
+}
+
 export function migrateKeys() {
   for (const [next, prevs] of Object.entries(LEGACY_KEYS)) {
     try {
