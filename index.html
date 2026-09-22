@@ -95,38 +95,38 @@
         <label class="f">Descrição<input id="fDesc" required maxlength="60" placeholder="Perfume" autocomplete="off"></label>
         <div class="f2">
           <label class="f">Valor (R$)<input id="fValor" required inputmode="decimal" placeholder="200,00"></label>
-          <label class="f">Tipo<select id="fTipo"><option value="cartao">Cartão</option><option value="externo">Externo</option></select></label>
+          <label class="f">Cobrança<select id="fTipo"><option value="cartao">Cartão (vai p/ fatura)</option><option value="externo">Externo (fora do cartão)</option></select></label>
         </div>
         <div class="f2">
-          <label class="f">Parcelas<input id="fParc" type="number" min="1" max="60" value="2"></label>
-          <label class="f">Início<input id="fInicio" type="month" required></label>
+          <label class="f">Em quantas vezes<input id="fParc" type="number" min="1" max="60" value="2"></label>
+          <label class="f">Começa em<input id="fInicio" type="month" required></label>
         </div>
         <div class="f2">
           <label class="f">Categoria<select id="fCat"></select></label>
-          <label class="f">Fim (recorrente)<input id="fFim" type="month"></label>
+          <label class="f">Termina em (opcional)<input id="fFim" type="month"></label>
         </div>
-        <label class="f row" style="grid-template-columns:auto 1fr;color:var(--ink)"><input type="checkbox" id="fRec" style="width:auto"> Mensal recorrente</label>
+        <label class="f row" style="grid-template-columns:auto 1fr;color:var(--ink)"><input type="checkbox" id="fRec" style="width:auto"> Repetir todo mês</label>
         <div class="sim" id="simBox" hidden></div>
         <button type="submit" class="btn">Salvar compromisso</button>
         <button type="button" class="btn ghost" id="btnSim">Simular antes de salvar</button>
       </form>
     </div>
     <div class="card">
-      <h2>Quanto ganho por mês</h2>
+      <h2>Meu salário mensal</h2>
       <form class="compact" id="formSalario">
-        <label class="f">Salário mensal (R$) — vale para todos os meses<input id="sSal" inputmode="decimal" placeholder="3000,00"></label>
+        <label class="f">Salário (R$) — vale para todos os meses<input id="sSal" inputmode="decimal" placeholder="3000,00"></label>
         <button class="btn" type="submit">Salvar salário</button>
       </form>
       <p class="muted" id="salInfo"></p>
     </div>
     <div class="card">
-      <h2>Receita / guardar do mês</h2>
+      <h2>Ajustar um mês específico</h2>
       <p class="muted" style="margin-top:0">Só use aqui para ajustar um mês específico (ex.: 13º, férias). Vazio = vale o salário.</p>
       <form class="compact" id="formMes">
         <label class="f">Mês<input id="mRef" type="month" required></label>
         <div class="f2">
-          <label class="f">Receita (R$)<input id="mRec" inputmode="decimal" placeholder="3000,00"></label>
-          <label class="f">Guardar (R$)<input id="mGua" inputmode="decimal" placeholder="500,00"></label>
+          <label class="f">Receita deste mês (R$)<input id="mRec" inputmode="decimal" placeholder="3000,00"></label>
+          <label class="f">Reservar (R$)<input id="mGua" inputmode="decimal" placeholder="500,00"></label>
         </div>
         <button class="btn" type="submit">Salvar mês</button>
       </form>
@@ -160,7 +160,7 @@
     <div class="card">
       <h2>Tela Início (dashboard)</h2>
       <ul class="clean">
-        <li><span><strong>Este mês</strong><br><span class="muted">Receita, reservado (guardar), comprometido e <strong>disponível = receita − guardar − compromissos</strong>.</span></span></li>
+        <li><span><strong>Este mês</strong><br><span class="muted">Receita, reservado, comprometido e <strong>disponível = receita − reservado − compromissos</strong>.</span></span></li>
         <li><span><strong>Gráfico mensal</strong><br><span class="muted">Barras do comprometido nos próximos 12 meses. A barra cheia é o mês mais pesado.</span></span></li>
         <li><span><strong>Resumo</strong><br><span class="muted">% da receita comprometida, mês mais pesado, até quando o dinheiro está comprometido e total futuro.</span></span></li>
         <li><span><strong>Faturas (cartão)</strong><br><span class="muted">Só compromissos do tipo Cartão. Mostra até quando o cartão já está comprometido.</span></span></li>
@@ -182,7 +182,7 @@
     <div class="card">
       <h2>Telas Meses e Ajustes</h2>
       <ul class="clean">
-        <li><span><strong>Meses</strong><br><span class="muted">Projeção detalhada: toque em cada mês para ver receita, guardar, cartão, externo e cada compromisso que o compõe.</span></span></li>
+        <li><span><strong>Meses</strong><br><span class="muted">Projeção detalhada: toque em cada mês para ver receita, reservado, cartão, externo e cada compromisso que o compõe.</span></span></li>
         <li><span><strong>Perfil</strong><br><span class="muted">Trocar o nome do topo e copiar o código de cadastro.</span></span></li>
         <li><span><strong>Aparência</strong><br><span class="muted">Modo claro (branco pastel) ou escuro (azul escuro) + 12 cores de fundo. Ficam salvos neste aparelho.</span></span></li>
         <li><span><strong>Senha e sessão</strong><br><span class="muted">Trocar senha, duração do "lembrar", esquecer o aparelho e bloquear agora.</span></span></li>

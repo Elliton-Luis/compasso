@@ -4,9 +4,10 @@ function makeEl() {
   return {
     hidden: true, value: '', textContent: '', innerHTML: '',
     style: {}, dataset: {}, onclick: null, onchange: null, onsubmit: null,
-    files: [], checked: false,
+    files: [], checked: false, disabled: false,
     setAttribute() {}, addEventListener(_ev, fn) { this._fn = fn; },
     appendChild() {}, click() { if (this.onclick) this.onclick(); },
+    closest: () => makeEl(),
     classList: {
       add: (c) => classes.add(c),
       remove: (c) => classes.delete(c),

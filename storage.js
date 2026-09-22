@@ -244,7 +244,7 @@ export function exportMarkdown(state, projection) {
   lines.push('');
   lines.push('## Projeção mensal');
   lines.push('');
-  lines.push('| Mês | Receita | Guardar | Comprometido (cartão+externo) | Disponível | % comprometido |');
+  lines.push('| Mês | Receita | Reservado | Comprometido (cartão+externo) | Disponível | % comprometido |');
   lines.push('|---|---|---|---|---|---|');
   for (const p of projection) {
     lines.push(`| ${p.labelLong} | ${fmt(p.receita)} | ${fmt(p.guardar)} | ${fmt(p.comprometido)} (${fmt(p.cartao)}+${fmt(p.externo)}) | ${fmt(p.disponivel)} | ${Math.round(p.pct * 100)}% |`);

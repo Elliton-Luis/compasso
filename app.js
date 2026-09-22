@@ -161,7 +161,7 @@ function finishSetup() {
 
 function afterUnlock() {
   showOnly('appViews');
-  $('#lockBadge').textContent = isEncrypted() ? '🔒' : 'local';
+  $('#lockBadge').textContent = isEncrypted() ? '🔒 protegido' : 'local';
   $('#helloName').textContent = profile?.name || 'Compasso';
   initStatic();
   render();
@@ -254,6 +254,14 @@ function bindOnce() {
   if (bound) return; bound = true;
   $('#formAdd').addEventListener('input', hideSim);
   $('#btnSim').onclick = showSim;
+  // Recorrente usa valor mensal: "em quantas vezes" não se aplica e é desativado.
+  const syncParc = () => {
+    const rec = $('#fRec').checked;
+    $('#fParc').disabled = rec;
+    $('#fParc').closest('label').style.opacity = rec ? 0.45 : 1;
+  };
+  $('#fRec').onchange = syncParc;
+  syncParc();
   $('#formAdd').onsubmit = async (e) => {
     e.preventDefault();
     const c = readForm();
@@ -261,6 +269,7 @@ function bindOnce() {
     state.commitments.push(c);
     await persist(); e.target.reset();
     $('#fInicio').value = currentMonthKey(); $('#fParc').value = 2;
+    syncParc();
     hideSim(); render();
     document.querySelector('[data-tab="home"]').click();
   };
@@ -296,8 +305,8 @@ function bindOnce() {
     $('#secMsg').textContent = 'Nome atualizado.';
   };
   $('#btnCopyToken').onclick = async () => {
-    try { await navigator.clipboard.writeText(profile.token); $('#secMsg').textContent = 'Token copiado.'; }
-    catch { $('#secMsg').textContent = 'Token: ' + profile.token; }
+    try { await navigator.clipboard.writeText(profile.token); $('#secMsg').textContent = 'Código copiado.'; }
+    catch { $('#secMsg').textContent = 'Código: ' + profile.token; }
   };
   $('#btnForget').onclick = () => { clearRemember(); $('#secMsg').textContent = 'Aparelho esquecido. Na próxima entrada a senha será pedida.'; };
   const doLock = () => lock();
@@ -447,7 +456,7 @@ function render() {
   $('#proj').innerHTML = proj.map((p) => `
     <details ${p.month === cur.month ? 'open' : ''}>
       <summary>${p.labelLong} — ${formatBRL(p.comprometido)} <span class="muted">· disp. ${formatBRL(p.disponivel)}</span></summary>
-      <p class="muted">Receita ${formatBRL(p.receita)} · Guardar ${formatBRL(p.guardar)} · Cartão ${formatBRL(p.cartao)} · Externo ${formatBRL(p.externo)} · ${p.receita ? Math.round(p.pct * 100) + '% comprometido' : 'sem receita'}</p>
+      <p class="muted">Receita ${formatBRL(p.receita)} · Reservado ${formatBRL(p.guardar)} · Cartão ${formatBRL(p.cartao)} · Externo ${formatBRL(p.externo)} · ${p.receita ? Math.round(p.pct * 100) + '% comprometido' : 'sem receita'}</p>
       ${p.itens.length ? `<ul class="clean">` + p.itens.map((i) => `<li><span>${i.descricao} <span class="pill ${i.tipo}">${i.tipo}</span>${i.parcela ? ` <span class="muted">${i.parcela}/${i.deParcelas}</span>` : ''}</span><strong>${formatBRL(i.valorCentavos)}</strong></li>`).join('') + `</ul>` : '<p class="muted">Sem compromissos.</p>'}
     </details>`).join('');
 

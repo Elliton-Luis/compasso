@@ -6,14 +6,14 @@ Entrada simples, análise poderosa: cadastre `descrição + valor + tipo + parce
 
 ## Funcionalidades
 
-- Receita e valor a guardar por mês (`disponível = receita − guardar − compromissos`)
+- Receita e valor reservado por mês (`disponível = receita − reservado − compromissos`)
 - Salário mensal fixo que preenche todos os meses (dá para ajustar um mês específico, ex.: 13º)
 - Compromissos no cartão (impactam faturas) e externos (projetados sem ir p/ fatura)
 - Parcelados (`R$ 600 em 6x` gera 6 meses) e recorrentes mensais com fim opcional
 - Projeção mensal futura, próximas faturas, linha temporal, mês mais pesado, último mês comprometido, % da receita, total futuro
 - Simulação antes de salvar ("se eu assumir +R$ 200/mês?") — mostra o disponível deste mês antes e depois
 - 8 categorias simples, 12 temas de fundo, modo claro/escuro, mobile-first
-- Perfil único (nome + senha + token de cadastro), login só com senha, lembrar de mim com prazo configurável
+- Perfil único (nome + senha + código de cadastro), login só com senha, lembrar de mim com prazo configurável
 - Aba Ajuda explicando cada tela e cada regra
 - Backup: JSON (exportar/importar), Markdown legível, PDF via impressão
 - Criptografia sempre ativa (AES-GCM + PBKDF2 via Web Crypto; senha nunca armazenada)
@@ -66,7 +66,7 @@ Ajustes → Aparência: modo ☀️ Claro (fundo branco pastel) ou 🌙 Escuro (
 `localStorage`:
 
 - `compasso.finance.v1`: dados financeiros **sempre criptografados** (AES-GCM). Valores derivados (parcela do mês, totais) são calculados, nunca armazenados.
-- `compasso.profile.v1`: perfil em texto puro (nome, token, tema, modo, prazo do lembrar) — necessário para mostrar o nome na tela de entrada.
+- `compasso.profile.v1`: perfil em texto puro (nome, código, tema, modo, prazo do lembrar) — necessário para mostrar o nome na tela de entrada.
 - `compasso.remember.v1`: presente só com "lembrar" ativo; guarda a senha ofuscada com validade.
 - Chaves antigas (`fluxo.*`, `alicia.*`) são migradas automaticamente na primeira abertura após a renomeação.
 
