@@ -1,6 +1,6 @@
 {
-  "name": "Alicia — Projeção Financeira",
-  "short_name": "Alicia",
+  "name": "Fluxo — Projeção Financeira",
+  "short_name": "Fluxo",
   "description": "Camada pessoal de planejamento: quanto do meu dinheiro já está comprometido?",
   "start_url": "./index.html",
   "scope": "./",

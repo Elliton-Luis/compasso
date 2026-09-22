@@ -1,4 +1,4 @@
-# Alicia — Projeção Financeira Pessoal
+# Fluxo — Projeção Financeira Pessoal
 
 Camada pessoal de planejamento financeiro. Não substitui o app do banco: responde **"quanto do meu dinheiro já está comprometido agora e no futuro?"**
 
@@ -60,9 +60,10 @@ Ajustes → Aparência: modo ☀️ Claro (fundo branco pastel) ou 🌙 Escuro (
 
 `localStorage`:
 
-- `alicia.finance.v1`: dados financeiros **sempre criptografados** (AES-GCM). Valores derivados (parcela do mês, totais) são calculados, nunca armazenados.
-- `alicia.profile.v1`: perfil em texto puro (nome, token, tema, modo, prazo do lembrar) — necessário para mostrar o nome na tela de entrada.
-- `alicia.remember.v1`: presente só com "lembrar" ativo; guarda a senha ofuscada com validade.
+- `fluxo.finance.v1`: dados financeiros **sempre criptografados** (AES-GCM). Valores derivados (parcela do mês, totais) são calculados, nunca armazenados.
+- `fluxo.profile.v1`: perfil em texto puro (nome, token, tema, modo, prazo do lembrar) — necessário para mostrar o nome na tela de entrada.
+- `fluxo.remember.v1`: presente só com "lembrar" ativo; guarda a senha ofuscada com validade.
+- Chaves antigas `alicia.*` são migradas automaticamente na primeira abertura após a renomeação.
 
 ## Backup
 

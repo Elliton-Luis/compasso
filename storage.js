@@ -1,8 +1,32 @@
 // storage.js — persistência local + perfil + criptografia (Web Crypto AES-GCM + PBKDF2) + backup.
-const LS_KEY = 'alicia.finance.v1';
-const LS_META = 'alicia.finance.meta.v1'; // { enc:bool }
-const LS_PROFILE = 'alicia.profile.v1'; // { name, token, createdAt, theme, mode, rememberMinutes } (texto puro)
-const LS_REMEMBER = 'alicia.remember.v1'; // { exp, p } — lembrar de mim (opt-in, com validade)
+const LS_KEY = 'fluxo.finance.v1';
+const LS_META = 'fluxo.meta.v1'; // { enc:bool }
+const LS_PROFILE = 'fluxo.profile.v1'; // { name, token, createdAt, theme, mode, rememberMinutes } (texto puro)
+const LS_REMEMBER = 'fluxo.remember.v1'; // { exp, p } — lembrar de mim (opt-in, com validade)
+// Chaves do nome antigo (migração única, sem perda de dados).
+const LEGACY_KEYS = {
+  [LS_KEY]: 'alicia.finance.v1',
+  [LS_META]: 'alicia.finance.meta.v1',
+  [LS_PROFILE]: 'alicia.profile.v1',
+  [LS_REMEMBER]: 'alicia.remember.v1',
+};
+
+export function migrateKeys() {
+  for (const [next, prev] of Object.entries(LEGACY_KEYS)) {
+    try {
+      if (!localStorage.getItem(next) && localStorage.getItem(prev)) {
+        localStorage.setItem(next, localStorage.getItem(prev));
+        localStorage.removeItem(prev);
+      }
+    } catch { /* ignora */ }
+  }
+}
+
+export function hasStoredData() {
+  try {
+    return !!(localStorage.getItem(LS_KEY) || localStorage.getItem(LEGACY_KEYS[LS_KEY]));
+  } catch { return false; }
+}
 
 function b64encode(buf) {
   const bytes = new Uint8Array(buf);
@@ -161,7 +185,7 @@ export function wipeAll() {
 
 // ---- Backup ----
 export function exportJSONString(state) {
-  return JSON.stringify({ app: 'projeto-alicia', version: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
+  return JSON.stringify({ app: 'fluxo', version: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
 }
 
 export function importJSONString(text) {

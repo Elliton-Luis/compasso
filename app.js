@@ -1,5 +1,5 @@
 import { project, summarize, simulate, formatBRL, formatMonthLong, currentMonthKey, toCents, CATEGORIAS, installmentValues } from './finance.js';
-import { loadState, saveState, defaultState, exportJSONString, importJSONString, exportMarkdown, enableEncryption, isEncrypted, uid, loadProfile, saveProfile, defaultProfile, makeToken, setRemember, getRemember, clearRemember, wipeAll, REMEMBER_OPTIONS } from './storage.js';
+import { loadState, saveState, defaultState, exportJSONString, importJSONString, exportMarkdown, enableEncryption, isEncrypted, uid, loadProfile, saveProfile, defaultProfile, makeToken, setRemember, getRemember, clearRemember, wipeAll, migrateKeys, hasStoredData, REMEMBER_OPTIONS } from './storage.js';
 
 const $ = (s) => document.querySelector(s);
 let state = defaultState();
@@ -34,6 +34,7 @@ function applyProfileToLock() {
 }
 
 async function boot() {
+  migrateKeys();
   profile = loadProfile();
   applyTheme();
   // 1) Lembrar de mim válido? entra direto.
@@ -49,7 +50,7 @@ async function boot() {
     } catch { clearRemember(); }
   }
   // 2) Sem perfil → cadastro (novo ou adotando dados legados).
-  const raw = localStorage.getItem('alicia.finance.v1');
+  const raw = hasStoredData();
   const enc = isEncrypted();
   if (!profile && !raw) { startSetup(false); return; }
   if (!profile && raw && !enc) {
@@ -86,7 +87,7 @@ function finishSetup() {
 function afterUnlock() {
   showOnly('appViews');
   $('#lockBadge').textContent = isEncrypted() ? '🔒' : 'local';
-  $('#helloName').textContent = profile?.name || 'Alicia';
+  $('#helloName').textContent = profile?.name || 'Fluxo';
   initStatic();
   render();
 }
@@ -265,8 +266,8 @@ function bindOnce() {
     a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
-  const doJSON = () => dl(`alicia-backup-${currentMonthKey()}.json`, exportJSONString(state), 'application/json');
-  const doMD = () => dl(`alicia-resumo-${currentMonthKey()}.md`, exportMarkdown(state, project(state)), 'text/markdown');
+  const doJSON = () => dl(`fluxo-backup-${currentMonthKey()}.json`, exportJSONString(state), 'application/json');
+  const doMD = () => dl(`fluxo-resumo-${currentMonthKey()}.md`, exportMarkdown(state, project(state)), 'text/markdown');
   $('#btnExport').onclick = doJSON; $('#btnJSON').onclick = doJSON; $('#btnMD').onclick = doMD;
   const doPrint = () => window.print();
   $('#btnPrint').onclick = doPrint; $('#btnPrint2').onclick = doPrint;
@@ -310,7 +311,7 @@ function showSim() {
 
 // ---------- render ----------
 function render() {
-  $('#helloName').textContent = profile?.name || 'Alicia';
+  $('#helloName').textContent = profile?.name || 'Fluxo';
   const proj = project(state);
   const sum = summarize(proj);
   const cur = proj[0];
