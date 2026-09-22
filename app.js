@@ -152,7 +152,7 @@ function finishSetup() {
 function afterUnlock() {
   showOnly('appViews');
   $('#lockBadge').textContent = isEncrypted() ? '🔒' : 'local';
-  $('#helloName').textContent = profile?.name || 'Fluxo';
+  $('#helloName').textContent = profile?.name || 'Compasso';
   initStatic();
   render();
 }
@@ -287,8 +287,8 @@ function bindOnce() {
     a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
-  const doJSON = () => dl(`fluxo-backup-${currentMonthKey()}.json`, exportJSONString(state), 'application/json');
-  const doMD = () => dl(`fluxo-resumo-${currentMonthKey()}.md`, exportMarkdown(state, project(state)), 'text/markdown');
+  const doJSON = () => dl(`compasso-backup-${currentMonthKey()}.json`, exportJSONString(state), 'application/json');
+  const doMD = () => dl(`compasso-resumo-${currentMonthKey()}.md`, exportMarkdown(state, project(state)), 'text/markdown');
   $('#btnExport').onclick = doJSON; $('#btnJSON').onclick = doJSON; $('#btnMD').onclick = doMD;
   const doPrint = () => window.print();
   $('#btnPrint').onclick = doPrint; $('#btnPrint2').onclick = doPrint;
@@ -332,7 +332,7 @@ function showSim() {
 
 // ---------- render ----------
 function render() {
-  $('#helloName').textContent = profile?.name || 'Fluxo';
+  $('#helloName').textContent = profile?.name || 'Compasso';
   const proj = project(state);
   const sum = summarize(proj);
   const cur = proj[0];
@@ -396,7 +396,7 @@ function render() {
 }
 $('#mRef')?.addEventListener('change', render);
 
-window.__fluxoBoot = true;
+window.__compassoBoot = true;
 boot().catch((err) => {
   console.error(err);
   showOnly('setupView');

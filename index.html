@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fluxo — Projeção Financeira</title>
+<title>Compasso — Projeção Financeira</title>
 <meta name="description" content="Camada pessoal de planejamento: quanto do meu dinheiro já está comprometido?">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
@@ -13,7 +13,7 @@
 <body>
 <header class="top">
   <div class="top-inner">
-    <h1><span id="helloName">Fluxo</span> <span class="badge" id="lockBadge">local</span></h1>
+    <h1><span id="helloName">Compasso</span> <span class="badge" id="lockBadge">local</span></h1>
     <div class="actions row no-print">
       <button class="btn small ghost" id="btnLockNow" title="Bloquear">🔒</button>
       <button class="btn small ghost" id="btnExport" title="Backup">⬇</button>
@@ -189,15 +189,15 @@
   </div>
 </nav>
 
-<footer class="no-print"><p>Fluxo · 100% local · sem conta, sem nuvem. Backup em JSON.</p></footer>
+<footer class="no-print"><p>Compasso · 100% local · sem conta, sem nuvem. Backup em JSON.</p></footer>
 
 <script type="module" src="app.js"></script>
 <script>
 // Se o módulo não carregar (ex.: abrindo o arquivo direto em vez do servidor),
-// o app.js nunca define __fluxoBoot — avisa em vez de ficar numa tela vazia.
+// o app.js nunca define __compassoBoot — avisa em vez de ficar numa tela vazia.
 window.addEventListener('load', () => {
   setTimeout(() => {
-    if (!window.__fluxoBoot) document.getElementById('bootErr').hidden = false;
+    if (!window.__compassoBoot) document.getElementById('bootErr').hidden = false;
   }, 1500);
 });
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{})); }

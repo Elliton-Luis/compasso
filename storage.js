@@ -1,22 +1,26 @@
 // storage.js — persistência local + perfil + criptografia (Web Crypto AES-GCM + PBKDF2) + backup.
-const LS_KEY = 'fluxo.finance.v1';
-const LS_META = 'fluxo.meta.v1'; // { enc:bool }
-const LS_PROFILE = 'fluxo.profile.v1'; // { name, token, createdAt, theme, mode, rememberMinutes } (texto puro)
-const LS_REMEMBER = 'fluxo.remember.v1'; // { exp, p } — lembrar de mim (opt-in, com validade)
-// Chaves do nome antigo (migração única, sem perda de dados).
+const LS_KEY = 'compasso.finance.v1';
+const LS_META = 'compasso.meta.v1'; // { enc:bool }
+const LS_PROFILE = 'compasso.profile.v1'; // { name, token, createdAt, theme, mode, rememberMinutes } (texto puro)
+const LS_REMEMBER = 'compasso.remember.v1'; // { exp, p } — lembrar de mim (opt-in, com validade)
+// Chaves dos nomes antigos (migração única, sem perda de dados).
 const LEGACY_KEYS = {
-  [LS_KEY]: 'alicia.finance.v1',
-  [LS_META]: 'alicia.finance.meta.v1',
-  [LS_PROFILE]: 'alicia.profile.v1',
-  [LS_REMEMBER]: 'alicia.remember.v1',
+  [LS_KEY]: ['fluxo.finance.v1', 'alicia.finance.v1'],
+  [LS_META]: ['fluxo.meta.v1', 'alicia.finance.meta.v1'],
+  [LS_PROFILE]: ['fluxo.profile.v1', 'alicia.profile.v1'],
+  [LS_REMEMBER]: ['fluxo.remember.v1', 'alicia.remember.v1'],
 };
 
 export function migrateKeys() {
-  for (const [next, prev] of Object.entries(LEGACY_KEYS)) {
+  for (const [next, prevs] of Object.entries(LEGACY_KEYS)) {
     try {
-      if (!localStorage.getItem(next) && localStorage.getItem(prev)) {
-        localStorage.setItem(next, localStorage.getItem(prev));
-        localStorage.removeItem(prev);
+      if (localStorage.getItem(next)) continue;
+      for (const prev of prevs) {
+        if (localStorage.getItem(prev)) {
+          localStorage.setItem(next, localStorage.getItem(prev));
+          localStorage.removeItem(prev);
+          break;
+        }
       }
     } catch { /* ignora */ }
   }
@@ -24,7 +28,8 @@ export function migrateKeys() {
 
 export function hasStoredData() {
   try {
-    return !!(localStorage.getItem(LS_KEY) || localStorage.getItem(LEGACY_KEYS[LS_KEY]));
+    if (localStorage.getItem(LS_KEY)) return true;
+    return LEGACY_KEYS[LS_KEY].some((k) => localStorage.getItem(k));
   } catch { return false; }
 }
 
@@ -185,7 +190,7 @@ export function wipeAll() {
 
 // ---- Backup ----
 export function exportJSONString(state) {
-  return JSON.stringify({ app: 'fluxo', version: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
+  return JSON.stringify({ app: 'compasso', version: 1, exportedAt: new Date().toISOString(), data: state }, null, 2);
 }
 
 export function importJSONString(text) {

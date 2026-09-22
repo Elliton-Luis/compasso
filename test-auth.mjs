@@ -1,4 +1,4 @@
-// Harness: simula o DOM mínimo e testa o fluxo cadastro → token → login.
+// Harness: simula o DOM mínimo e testa o compasso cadastro → token → login.
 function makeEl() {
   return {
     hidden: true, value: '', textContent: '', innerHTML: '',
@@ -70,11 +70,11 @@ check('cadastro exige senhas iguais', el('#setupErr').textContent !== '');
 // 4) Cadastro válido → token exibido uma vez
 el('#setupPass').value = '1234'; el('#setupPass2').value = '1234';
 await el('#btnSetup').onclick();
-const prof = JSON.parse(localStorage.getItem('fluxo.profile.v1'));
+const prof = JSON.parse(localStorage.getItem('compasso.profile.v1'));
 check('perfil salvo com nome', prof && prof.name === 'Maria');
 check('token gerado', !!prof.token && prof.token.includes('-'));
 check('token exibido', el('#tokenBox').hidden === false && el('#tokenValue').textContent === prof.token);
-check('dados criptografados', !!JSON.parse(localStorage.getItem('fluxo.meta.v1')).enc);
+check('dados criptografados', !!JSON.parse(localStorage.getItem('compasso.meta.v1')).enc);
 
 // 5) Começar → app abre com o nome no topo
 await el('#btnTokenGo').onclick();
@@ -89,7 +89,7 @@ el('#unlockPass').value = '1234';
 el('#rememberMe').checked = true;
 await el('#btnUnlock').onclick();
 check('senha certa entra', el('#appViews').hidden === false);
-check('lembrar de mim gravado', !!localStorage.getItem('fluxo.remember.v1'));
+check('lembrar de mim gravado', !!localStorage.getItem('compasso.remember.v1'));
 
 // 7) Senha vazia
 el('#unlockPass').value = '';
