@@ -34,6 +34,7 @@ function applyProfileToLock() {
 }
 
 async function boot() {
+  bindAuth(); // botões de cadastro/login precisam funcionar ANTES do desbloqueio
   migrateKeys();
   profile = loadProfile();
   applyTheme();
@@ -78,6 +79,70 @@ function startSetup(adopting) {
   $('#tokenBox').hidden = true;
   $('#btnSetup').hidden = false;
   $('#setupErr').textContent = '';
+  // Se a senha já é conhecida (migração), cadastro pede só o nome.
+  $('#setupPassFields').style.display = migrationPass ? 'none' : 'grid';
+}
+
+// ---------- auth (ligado no boot: funciona nas telas de cadastro e login) ----------
+let authBound = false;
+function bindAuth() {
+  if (authBound) return; authBound = true;
+  $('#btnSetup').onclick = doSetup;
+  $('#btnTokenGo').onclick = () => { applyTheme(); afterUnlock(); };
+  $('#btnUnlock').onclick = tryUnlock;
+  $('#unlockPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
+  for (const id of ['#setupName', '#setupPass', '#setupPass2']) {
+    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') doSetup(); });
+  }
+}
+
+async function doSetup() {
+  const name = $('#setupName').value.trim();
+  const p1 = $('#setupPass').value, p2 = $('#setupPass2').value;
+  if (!name) { $('#setupErr').textContent = 'Informe seu nome.'; return; }
+  if (migrationPass) {
+    // Adotando dados legados já desbloqueados: só nome, mantém a senha atual.
+    profile = { ...defaultProfile(), name, token: makeToken(), createdAt: new Date().toISOString() };
+    saveProfile(profile); finishSetup(); return;
+  }
+  if (p1.length < 4) { $('#setupErr').textContent = 'A senha precisa de ao menos 4 caracteres.'; return; }
+  if (p1 !== p2) { $('#setupErr').textContent = 'As senhas não conferem.'; return; }
+  profile = { ...defaultProfile(), name, token: makeToken(), createdAt: new Date().toISOString() };
+  saveProfile(profile);
+  try {
+    await enableEncryption(state, p1);
+  } catch {
+    $('#setupErr').textContent = 'Este navegador bloqueou a criptografia. Use Chrome/Edge/Firefox atualizado.';
+    return;
+  }
+  sessionPass = p1;
+  $('#tokenValue').textContent = profile.token;
+  $('#tokenBox').hidden = false;
+  $('#btnSetup').hidden = true;
+  $('#setupErr').textContent = '';
+}
+
+async function tryUnlock() {
+  const p = $('#unlockPass').value;
+  if (!p) { $('#unlockErr').textContent = 'Digite sua senha.'; return; }
+  try {
+    // Legado criptografado sem perfil: captura a senha e segue p/ cadastro do nome.
+    if (!profile && isEncrypted()) {
+      const st = await loadState(p);
+      if (st.__needsPassword) throw new Error('bad');
+      state = st; sessionPass = p; migrationPass = p;
+      startSetup(true); return;
+    }
+    const st = await loadState(p);
+    if (st.__needsPassword) throw new Error('bad');
+    state = st; sessionPass = p;
+    // Migra tema antigo (guardado no state) para o perfil.
+    if (profile && !profile.migratedTheme && st.theme) {
+      profile.theme = st.theme; profile.migratedTheme = true; saveProfile(profile);
+    }
+    if ($('#rememberMe').checked) setRemember(p, profile?.rememberMinutes || 1440);
+    applyTheme(); afterUnlock();
+  } catch { $('#unlockErr').textContent = 'Senha incorreta.'; }
 }
 
 function finishSetup() {
@@ -192,50 +257,6 @@ function bindOnce() {
     if ($('#mGua').value !== '') state.savings[m] = g;
     await persist(); render();
   };
-  $('#btnSetup').onclick = async () => {
-    const name = $('#setupName').value.trim();
-    const p1 = $('#setupPass').value, p2 = $('#setupPass2').value;
-    if (!name) { $('#setupErr').textContent = 'Informe seu nome.'; return; }
-    if (migrationPass) {
-      // Adotando dados legados já desbloqueados: só nome, mantém a senha atual.
-      profile = { ...defaultProfile(), name, token: makeToken(), createdAt: new Date().toISOString() };
-      saveProfile(profile); finishSetup(); return;
-    }
-    if (p1.length < 4) { $('#setupErr').textContent = 'A senha precisa de ao menos 4 caracteres.'; return; }
-    if (p1 !== p2) { $('#setupErr').textContent = 'As senhas não conferem.'; return; }
-    profile = { ...defaultProfile(), name, token: makeToken(), createdAt: new Date().toISOString() };
-    saveProfile(profile);
-    await enableEncryption(state, p1);
-    sessionPass = p1;
-    $('#tokenValue').textContent = profile.token;
-    $('#tokenBox').hidden = false;
-    $('#btnSetup').hidden = true;
-    $('#setupErr').textContent = '';
-  };
-  $('#btnTokenGo').onclick = () => { applyTheme(); afterUnlock(); };
-  const tryUnlock = async () => {
-    const p = $('#unlockPass').value;
-    try {
-      // Legado criptografado sem perfil: captura a senha e segue p/ cadastro do nome.
-      if (!profile && isEncrypted()) {
-        const st = await loadState(p);
-        if (st.__needsPassword) throw new Error('bad');
-        state = st; sessionPass = p; migrationPass = p;
-        startSetup(true); return;
-      }
-      const st = await loadState(p);
-      if (st.__needsPassword) throw new Error('bad');
-      state = st; sessionPass = p;
-      // Migra tema antigo (guardado no state) para o perfil.
-      if (profile && !profile.migratedTheme && st.theme) {
-        profile.theme = st.theme; profile.migratedTheme = true; saveProfile(profile);
-      }
-      if ($('#rememberMe').checked) setRemember(p, profile?.rememberMinutes || 1440);
-      applyTheme(); afterUnlock();
-    } catch { $('#unlockErr').textContent = 'Senha incorreta.'; }
-  };
-  $('#btnUnlock').onclick = tryUnlock;
-  $('#unlockPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
   $('#btnChangePass').onclick = async () => {
     const p1 = $('#secPass').value, p2 = $('#secPass2').value;
     if (p1.length < 4) { $('#secMsg').textContent = 'Use ao menos 4 caracteres.'; return; }
@@ -375,4 +396,10 @@ function render() {
 }
 $('#mRef')?.addEventListener('change', render);
 
-boot();
+window.__fluxoBoot = true;
+boot().catch((err) => {
+  console.error(err);
+  showOnly('setupView');
+  $('#setupHint').textContent = 'Cadastro único: seu nome aparece no topo e a senha protege seus dados.';
+  $('#setupErr').textContent = 'Falha ao abrir o armazenamento local. Libere o LocalStorage do navegador e recarregue.';
+});

@@ -23,8 +23,14 @@
 </header>
 
 <main id="main">
+  <div id="bootErr" class="card" hidden style="border-color:var(--danger)">
+    <h2>Não foi possível iniciar</h2>
+    <p class="muted">O app precisa ser aberto por um servidor local (módulos do navegador são bloqueados em arquivo direto). Rode na pasta do projeto:</p>
+    <p><strong>python3 -m http.server 5173</strong></p>
+    <p class="muted">e abra <strong>http://localhost:5173</strong></p>
+  </div>
   <div id="setupView" class="card lock" hidden>
-    <h2>Criar meu perfil</h2>
+    <h2>① Criar meu perfil (só uma vez)</h2>
     <p class="muted" id="setupHint">Cadastro único: seu nome aparece no topo e a senha protege seus dados. Depois, a entrada pede só a senha.</p>
     <input id="setupName" maxlength="30" placeholder="Seu nome" autocomplete="given-name" style="max-width:280px">
     <div id="setupPassFields" style="display:grid;gap:10px;place-items:center;width:100%">
@@ -42,6 +48,7 @@
   </div>
 
   <div id="lockView" class="card lock" hidden>
+    <p class="muted" style="margin:0">② Entrada (só a senha)</p>
     <h2 id="lockHello">Protegido por senha</h2>
     <p class="muted">Digite sua senha para entrar.</p>
     <input id="unlockPass" type="password" placeholder="Senha" autocomplete="current-password" style="max-width:280px">
@@ -186,6 +193,13 @@
 
 <script type="module" src="app.js"></script>
 <script>
+// Se o módulo não carregar (ex.: abrindo o arquivo direto em vez do servidor),
+// o app.js nunca define __fluxoBoot — avisa em vez de ficar numa tela vazia.
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!window.__fluxoBoot) document.getElementById('bootErr').hidden = false;
+  }, 1500);
+});
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>
