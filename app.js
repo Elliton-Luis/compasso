@@ -193,7 +193,7 @@ function initStatic() {
     document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', 'false'));
     b.setAttribute('aria-selected', 'true');
     document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-    ({ home: 'view-home', add: 'view-add', months: 'view-months', settings: 'view-settings' });
+    ({ home: 'view-home', add: 'view-add', months: 'view-months', settings: 'view-settings', help: 'view-help' });
     $('#view-' + b.dataset.tab).classList.add('active');
     window.scrollTo({ top: 0 });
   });

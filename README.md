@@ -14,6 +14,7 @@ Entrada simples, análise poderosa: cadastre `descrição + valor + tipo + parce
 - Simulação antes de salvar ("se eu assumir +R$ 200/mês?") — mostra o disponível deste mês antes e depois
 - 8 categorias simples, 12 temas de fundo, modo claro/escuro, mobile-first
 - Perfil único (nome + senha + token de cadastro), login só com senha, lembrar de mim com prazo configurável
+- Aba Ajuda explicando cada tela e cada regra
 - Backup: JSON (exportar/importar), Markdown legível, PDF via impressão
 - Criptografia sempre ativa (AES-GCM + PBKDF2 via Web Crypto; senha nunca armazenada)
 - PWA offline (manifest + service worker)
@@ -79,7 +80,7 @@ Os dados financeiros são cifrados com AES-GCM (chave PBKDF2-SHA256, 120k itera�
 
 ## Estrutura
 
-- `index.html` — layout + cadastro, entrada, 4 visões (Início, Novo, Meses, Ajustes)
+- `index.html` — layout + cadastro, entrada, 5 visões (Início, Novo, Meses, Ajustes, Ajuda)
 - `styles.css` — mobile-first, 12 temas de fundo via `[data-theme]`, modo claro/escuro via `[data-mode]`, print p/ PDF
 - `finance.js` — regras puras (parcelas, recorrência, projeção, resumo, simulação)
 - `storage.js` — persistência, perfil, lembrar, cripto, backup (JSON/Markdown)

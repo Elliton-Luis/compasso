@@ -142,6 +142,60 @@
     <div class="card"><h2>Projeção mensal</h2><div id="proj"></div></div>
   </section>
 
+  <!-- AJUDA -->
+  <section class="view" id="view-help" aria-label="Ajuda">
+    <div class="card">
+      <h2>O que é o Compasso</h2>
+      <p>Camada pessoal de planejamento financeiro. Ele <strong>não</strong> substitui o app do banco: responde <strong>"quanto do meu dinheiro já está comprometido, agora e no futuro?"</strong></p>
+      <p class="muted" style="margin-bottom:0">A regra é: <strong>cadastro simples, análise poderosa</strong>. Você informa os fatos (descrição + valor + parcelas + início) e o app calcula parcelas, faturas, disponibilidade e projeções.</p>
+    </div>
+    <div class="card">
+      <h2>Conta: senha x código</h2>
+      <ul class="clean">
+        <li><span><strong>Senha</strong><br><span class="muted">Criada por você no cadastro. É o que você digita para entrar. O 👁️ mostra o que foi digitado.</span></span></li>
+        <li><span><strong>Código</strong> (ex.: AB12-CD34)<br><span class="muted">Gerado pelo app, não é senha e não abre nada. Prova que o perfil é seu e é pedido para apagar tudo. Anote e guarde (Ajustes → Perfil).</span></span></li>
+        <li><span><strong>Lembrar de mim</strong><br><span class="muted">Dispensa a senha até o prazo expirar (1h a 30 dias, configurável). Só em aparelho pessoal.</span></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Tela Início (dashboard)</h2>
+      <ul class="clean">
+        <li><span><strong>Este mês</strong><br><span class="muted">Receita, reservado (guardar), comprometido e <strong>disponível = receita − guardar − compromissos</strong>.</span></span></li>
+        <li><span><strong>Gráfico mensal</strong><br><span class="muted">Barras do comprometido nos próximos 12 meses. A barra cheia é o mês mais pesado.</span></span></li>
+        <li><span><strong>Resumo</strong><br><span class="muted">% da receita comprometida, mês mais pesado, até quando o dinheiro está comprometido e total futuro.</span></span></li>
+        <li><span><strong>Faturas (cartão)</strong><br><span class="muted">Só compromissos do tipo Cartão. Mostra até quando o cartão já está comprometido.</span></span></li>
+        <li><span><strong>Por categoria</strong><br><span class="muted">Rosca com para onde vai o dinheiro em 12 meses.</span></span></li>
+        <li><span><strong>Linha do tempo</strong><br><span class="muted">Próximas cobranças (com nº da parcela, ex.: 2/6) — dá para ver quando cada uma termina.</span></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Tela Novo (cadastrar)</h2>
+      <ul class="clean">
+        <li><span><strong>Compromisso</strong><br><span class="muted">Descrição + valor + tipo + parcelas + início. O app calcula valor da parcela, meses afetados e último mês.</span></span></li>
+        <li><span><strong>Cartão x Externo</strong><br><span class="muted">Cartão entra nas faturas. Externo (ex.: combinado fora do cartão) é projetado normalmente, mas fora da fatura.</span></span></li>
+        <li><span><strong>Parcelas</strong><br><span class="muted">R$ 200 em 2x = 2 meses de R$ 100. Centavos quebrados vão para as primeiras parcelas (R$ 200 em 3x = 66,67 + 66,67 + 66,66).</span></span></li>
+        <li><span><strong>Recorrente</strong><br><span class="muted">Marque "mensal recorrente" para repetir todo mês (ex.: academia). O valor passa a ser mensal. "Fim" é opcional.</span></span></li>
+        <li><span><strong>Salário mensal</strong><br><span class="muted">Vale para todos os meses da projeção e das simulações. Para ajustar um mês específico (13º, férias), use "Receita do mês" — vazio = vale o salário.</span></span></li>
+        <li><span><strong>Simular antes de salvar</strong><br><span class="muted">Mostra como fica o disponível deste mês (antes → depois), o mês mais pesado e o total futuro. Não salva nada.</span></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Telas Meses e Ajustes</h2>
+      <ul class="clean">
+        <li><span><strong>Meses</strong><br><span class="muted">Projeção detalhada: toque em cada mês para ver receita, guardar, cartão, externo e cada compromisso que o compõe.</span></span></li>
+        <li><span><strong>Perfil</strong><br><span class="muted">Trocar o nome do topo e copiar o código de cadastro.</span></span></li>
+        <li><span><strong>Aparência</strong><br><span class="muted">Modo claro (branco pastel) ou escuro (azul escuro) + 12 cores de fundo. Ficam salvos neste aparelho.</span></span></li>
+        <li><span><strong>Senha e sessão</strong><br><span class="muted">Trocar senha, duração do "lembrar", esquecer o aparelho e bloquear agora.</span></span></li>
+        <li><span><strong>Backup</strong><br><span class="muted">JSON = backup completo (exportar/importar). Markdown = resumo legível. PDF = relatório via impressão.</span></span></li>
+        <li><span><strong>Apagar tudo</strong><br><span class="muted">Exige o código de cadastro. Sem o código, não apaga.</span></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Segurança e dados</h2>
+      <p class="muted">Tudo fica <strong>no seu aparelho</strong> (LocalStorage), sem conta e sem nuvem. Os dados financeiros são criptografados (AES-GCM); a senha nunca é guardada — exceto com "lembrar" ativo (ofuscada, com validade). Funciona offline depois de instalado (PWA).</p>
+    </div>
+  </section>
+
   <!-- AJUSTES -->
   <section class="view" id="view-settings" aria-label="Ajustes">
     <div class="card">
@@ -202,6 +256,7 @@
     <button data-tab="add" aria-selected="false"><span class="ic">➕</span><span>Novo</span></button>
     <button data-tab="months" aria-selected="false"><span class="ic">📅</span><span>Meses</span></button>
     <button data-tab="settings" aria-selected="false"><span class="ic">⚙️</span><span>Ajustes</span></button>
+    <button data-tab="help" aria-selected="false"><span class="ic">❓</span><span>Ajuda</span></button>
   </div>
 </nav>
 
