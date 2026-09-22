@@ -1,0 +1,13 @@
+{
+  "name": "Alicia — Projeção Financeira",
+  "short_name": "Alicia",
+  "description": "Camada pessoal de planejamento: quanto do meu dinheiro já está comprometido?",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
